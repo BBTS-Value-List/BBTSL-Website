@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BBTS — Blade Ball Value List</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #12151a;
+    --bg-soft: #171b22;
+    --surface: #1c212b;
+    --surface-hi: #242a37;
+    --line: #2b3242;
+    --text: #e7ebf2;
+    --text-dim: #8b93a5;
+    --text-faint: #5b6376;
+    --ember: #ff8a3d;
+    --ember-dim: #b85f24;
+    --ice: #5fc2ff;
+    --gold: #e8b94f;
+    --teal: #4fd1a5;
+    --violet: #a389f4;
+    --slate: #7d8aa3;
+    --danger: #ff6a6a;
+    --warn: #ffb648;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse 900px 500px at 12% -10%, rgba(255,138,61,.09), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 100% 0%, rgba(95,194,255,.06), transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .display{font-family:'Rajdhani',sans-serif; font-weight:700; letter-spacing:.01em;}
+  .mono{font-family:'JetBrains Mono', monospace;}
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    position:sticky; top:0; z-index:40;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 28px;
+    background:rgba(18,21,26,.85);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .brand{display:flex; align-items:center; gap:10px;}
+  .brand svg{width:26px;height:26px;flex:none;}
+  .brand-text{display:flex; flex-direction:column; line-height:1;}
+  .brand-text .name{font-family:'Rajdhani',sans-serif; font-weight:700; font-size:19px; letter-spacing:.04em;}
+  .brand-text .sub{font-size:10px; color:var(--text-faint); letter-spacing:.14em; text-transform:uppercase; margin-top:2px;}
+  .topbar-meta{font-size:12px; color:var(--text-faint); font-family:'JetBrains Mono',monospace;}
+  .topbar-meta span{color:var(--ember);}
+
+  /* ---------- hero ---------- */
+  .hero{
+    padding:64px 28px 40px;
+    max-width:1180px; margin:0 auto;
+    position:relative;
+  }
+  .hero-eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--ember); font-weight:600; margin-bottom:18px;
+  }
+  .hero-eyebrow::before{content:''; width:16px; height:1px; background:var(--ember);}
+  .hero h1{
+    font-size:clamp(40px, 6vw, 68px);
+    line-height:0.98;
+    margin:0 0 18px;
+  }
+  .hero h1 .accent{color:var(--ember); position:relative;}
+  .hero p{
+    max-width:560px; color:var(--text-dim); font-size:15.5px; line-height:1.6; margin:0;
+  }
+
+  /* signature: tempering scale legend */
+  .temper-strip{
+    margin-top:36px;
+    display:flex; align-items:center; gap:0;
+    max-width:640px;
+  }
+  .temper-strip .bar{
+    height:8px; flex:1; border-radius:2px;
+    background:linear-gradient(90deg,
+      #4a5a78 0%, #5573c9 12%, #7d5fd9 24%, #a34fd0 36%,
+      #d94f9e 48%, #e8636b 60%, #e88a4f 72%, #efab4a 84%, #f4cf5c 100%);
+  }
+  .temper-labels{
+    display:flex; justify-content:space-between; max-width:640px;
+    font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-faint);
+    margin-top:6px; letter-spacing:.03em;
+  }
+
+  /* ---------- stats row ---------- */
+  .stats{
+    max-width:1180px; margin:0 auto; padding:0 28px 8px;
+    display:grid; grid-template-columns:repeat(4,1fr); gap:14px;
+  }
+  .stat{
+    background:var(--surface); border:1px solid var(--line); border-radius:10px;
+    padding:16px 18px;
+  }
+  .stat .num{font-family:'Rajdhani',sans-serif; font-weight:700; font-size:26px;}
+  .stat .lbl{font-size:11px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.08em; margin-top:4px;}
+
+  /* ---------- controls ---------- */
+  .controls{
+    max-width:1180px; margin:0 auto; padding:36px 28px 18px;
+    display:flex; flex-wrap:wrap; gap:14px; align-items:center;
+  }
+  .search-wrap{
+    position:relative; flex:1; min-width:240px;
+  }
+  .search-wrap svg{
+    position:absolute; left:14px; top:50%; transform:translateY(-50%);
+    width:16px; height:16px; color:var(--text-faint);
+  }
+  #search{
+    width:100%; background:var(--surface); border:1px solid var(--line);
+    border-radius:9px; padding:11px 14px 11px 38px; color:var(--text);
+    font-size:14px; font-family:'IBM Plex Sans',sans-serif;
+    outline:none; transition:border-color .15s;
+  }
+  #search:focus{border-color:var(--ember-dim);}
+  #search::placeholder{color:var(--text-faint);}
+
+  .chips{display:flex; gap:8px; flex-wrap:wrap;}
+  .chip{
+    padding:9px 14px; border-radius:8px; border:1px solid var(--line);
+    background:var(--surface); color:var(--text-dim); font-size:12.5px;
+    font-weight:500; cursor:pointer; user-select:none; transition:all .15s;
+    white-space:nowrap;
+  }
+  .chip:hover{border-color:var(--slate); color:var(--text);}
+  .chip.active{background:var(--surface-hi); border-color:var(--ember-dim); color:var(--ember);}
+
+  .sort-wrap select{
+    background:var(--surface); border:1px solid var(--line); color:var(--text);
+    border-radius:9px; padding:11px 14px; font-size:12.5px; font-family:'IBM Plex Sans',sans-serif;
+    cursor:pointer; outline:none;
+  }
+
+  /* ---------- grid ---------- */
+  .grid{
+    max-width:1180px; margin:0 auto; padding:10px 28px 100px;
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:14px;
+  }
+  .card{
+    background:var(--surface); border:1px solid var(--line); border-radius:12px;
+    padding:18px 18px 16px; position:relative; overflow:hidden;
+    transition:transform .16s ease, border-color .16s ease, background .16s ease;
+  }
+  .card::before{
+    content:''; position:absolute; left:0; top:0; bottom:0; width:4px;
+    background:var(--tcolor, var(--slate));
+  }
+  .card:hover{transform:translateY(-2px); border-color:var(--line); background:var(--surface-hi);}
+  .card-thumb{
+    width:100%; height:160px; border-radius:8px; overflow:hidden; margin-bottom:12px;
+    background:var(--bg-soft); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .card-thumb img{width:100%; height:100%; object-fit:contain; display:block;}
+
+  .card-top{display:flex; justify-content:space-between; align-items:flex-start; gap:10px;}
+  .card-name{font-family:'Rajdhani',sans-serif; font-weight:600; font-size:17.5px; line-height:1.15;}
+  .cat-badge{
+    font-size:9.5px; font-weight:600; letter-spacing:.08em; text-transform:uppercase;
+    padding:3px 8px; border-radius:20px; white-space:nowrap; flex:none;
+    border:1px solid currentColor;
+  }
+  .card-value{
+    font-family:'JetBrains Mono',monospace; font-weight:600; font-size:21px;
+    margin-top:12px; color:var(--ember); display:flex; align-items:baseline; gap:6px;
+  }
+  .card-value .diamond{font-size:14px; opacity:.85;}
+  .card-meta{
+    display:flex; gap:14px; margin-top:12px; font-size:11.5px; color:var(--text-dim);
+  }
+  .meta-item{display:flex; flex-direction:column; gap:2px;}
+  .meta-item .k{color:var(--text-faint); font-size:9.5px; text-transform:uppercase; letter-spacing:.07em;}
+  .trend{display:flex; align-items:center; gap:4px; font-weight:600;}
+  .trend svg{width:11px;height:11px;}
+  .trend.Rising{color:var(--teal);}
+  .trend.Falling{color:var(--danger);}
+  .trend.Stable{color:var(--slate);}
+  .trend.Manipulated{color:var(--warn);}
+  .trend.NA{color:var(--text-faint);}
+  .card-desc{
+    margin-top:12px; font-size:12px; color:var(--text-faint); line-height:1.5;
+    border-top:1px solid var(--line); padding-top:10px;
+  }
+  .card-updated{
+    margin-top:10px; font-size:10px; color:var(--text-faint); font-family:'JetBrains Mono',monospace;
+  }
+  .card-footer{
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .edit-btn{
+    width:30px; height:30px; border-radius:8px; border:none;
+    background:var(--ember); color:#fff; flex:none;
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    transition:all .15s;
+  }
+  .edit-btn:hover{background:#ff9a55; transform:scale(1.05);}
+  .edit-btn svg{width:15px; height:15px;}
+  .edited-tag{
+    font-size:9px; color:var(--ember); letter-spacing:.06em; text-transform:uppercase;
+    font-family:'JetBrains Mono',monospace;
+  }
+
+  /* ---------- edit toolbar ---------- */
+  .edit-toolbar{
+    max-width:1180px; margin:0 auto; padding:0 28px 6px;
+    display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+    font-size:11.5px; color:var(--text-faint);
+  }
+  .edit-toolbar .tbtn{
+    padding:7px 12px; border-radius:7px; border:1px solid var(--line);
+    background:var(--surface); color:var(--text-dim); font-size:11.5px;
+    cursor:pointer; transition:all .15s; font-family:'IBM Plex Sans',sans-serif;
+  }
+  .edit-toolbar .tbtn:hover{border-color:var(--slate); color:var(--text);}
+  .edit-toolbar .tbtn.warn:hover{border-color:var(--danger); color:var(--danger);}
+
+  /* ---------- modal ---------- */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(8,10,13,.72); backdrop-filter:blur(3px);
+    display:none; align-items:center; justify-content:center; z-index:100; padding:20px;
+  }
+  .modal-overlay.show{display:flex;}
+  .modal{
+    background:var(--surface); border:1px solid var(--line); border-radius:14px;
+    padding:24px; width:100%; max-width:420px; max-height:88vh; overflow-y:auto;
+  }
+  .modal h3{
+    font-family:'Rajdhani',sans-serif; font-size:22px; margin:0 0 18px; font-weight:700;
+  }
+  .field{margin-bottom:14px;}
+  .field label{
+    display:block; font-size:10.5px; color:var(--text-faint); text-transform:uppercase;
+    letter-spacing:.07em; margin-bottom:6px; font-weight:600;
+  }
+  .field input, .field select, .field textarea{
+    width:100%; background:var(--bg-soft); border:1px solid var(--line); color:var(--text);
+    border-radius:8px; padding:9px 11px; font-size:13.5px; font-family:'IBM Plex Sans',sans-serif;
+    outline:none;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{border-color:var(--ember-dim);}
+  .field textarea{resize:vertical; min-height:60px;}
+  .modal-actions{
+    display:flex; gap:10px; margin-top:20px;
+  }
+  .modal-actions button{
+    flex:1; padding:11px; border-radius:8px; border:1px solid var(--line);
+    font-size:13px; font-weight:600; cursor:pointer; font-family:'IBM Plex Sans',sans-serif;
+  }
+  .btn-save{background:var(--ember); border-color:var(--ember); color:#1a1005;}
+  .btn-save:hover{background:#ff9a55;}
+  .btn-cancel{background:transparent; color:var(--text-dim);}
+  .btn-cancel:hover{color:var(--text);}
+
+  .empty{
+    max-width:1180px; margin:0 auto; padding:60px 28px; text-align:center; color:var(--text-faint);
+    display:none;
+  }
+  .empty.show{display:block;}
+
+  footer{
+    border-top:1px solid var(--line); padding:28px; text-align:center;
+    color:var(--text-faint); font-size:11.5px; max-width:1180px; margin:0 auto;
+  }
+  .footer-credit{
+    margin-top:7px; font-size:10px; color:var(--text-faint); opacity:.72;
+  }
+
+  @media (max-width:720px){
+    .stats{grid-template-columns:repeat(2,1fr);}
+    .hero{padding:44px 18px 28px;}
+    .controls,.grid{padding-left:18px; padding-right:18px;}
+    .topbar{padding:12px 18px;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important; scroll-behavior:auto !important;}
+  }
+
+  ::selection{background:var(--ember); color:#12151a;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M4 20L15 9M15 9L13 3L21 5L19 11L15 9Z" stroke="#ff8a3d" stroke-width="1.6" stroke-linejoin="round"/><circle cx="4" cy="20" r="1.4" fill="#ff8a3d"/></svg>
+    <div class="brand-text">
+      <div class="name">BBTS</div>
+      <div class="sub">Blade Ball Value List</div>
+    </div>
+  </div>
+  <div style="display:flex; align-items:center; gap:14px;">
+    <div class="topbar-meta">SNAPSHOT <span id="lastUpdated">—</span></div>
+    <div id="lockBtn" title="Editor access" style="width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-faint);transition:all .15s;">
+      <svg id="lockIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+    </div>
+  </div>
+</div>
+
+<div class="hero">
+  <h1 class="display">BLADE BALL TOP SPENDERS VALUE LIST</h1>
+
+  <div class="temper-strip"><div class="bar"></div></div>
+  <div class="temper-labels"><span>LOW VALUE</span><span>HIGH VALUE</span></div>
+</div>
+
+<div class="controls">
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    <input id="search" type="text" placeholder="Search swords…" autocomplete="off">
+  </div>
+  <div class="chips" id="chips"></div>
+  <div class="sort-wrap">
+    <select id="sortSelect">
+      <option value="value-desc">Value: High to Low</option>
+      <option value="value-asc">Value: Low to High</option>
+      <option value="name-asc">Name: A–Z</option>
+      <option value="updated-desc">Recently Updated</option>
+    </select>
+  </div>
+</div>
+
+<div class="edit-toolbar" id="editToolbar" style="display:none;">
+  <span id="editStatus">Edits save to the shared value list for every visitor.</span>
+  <div class="tbtn" id="addSwordBtn">Add new sword</div>
+  <div class="tbtn" id="exportBtn">Export data.js</div>
+  <div class="tbtn warn" id="resetBtn">Reset all edits</div>
+</div>
+
+<div class="grid" id="grid"></div>
+<div class="empty" id="empty">No blades match that search. Try another name.</div>
+
+<footer>
+</footer>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3 id="modalTitle">Edit Sword</h3>
+    <form id="editForm">
+      <div class="field">
+        <label>Name</label>
+        <input type="text" id="f-name" required>
+      </div>
+      <div class="field">
+        <label>Category</label>
+        <select id="f-cat">
+          <option value="LTM">LTM</option>
+          <option value="Ranked">Ranked</option>
+          <option value="Top Spenders">Top Spenders</option>
+          <option value="Other Swords">Other Swords</option>
+          <option value="Explosions">Explosions</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Value</label>
+        <input type="number" id="f-value" min="0" max="10000000" step="1000">
+      </div>
+      <div class="field">
+        <label>Demand</label>
+        <select id="f-demand">
+          <option value="Very High">Very High</option>
+          <option value="High">High</option>
+          <option value="Medium">Medium</option>
+          <option value="Low">Low</option>
+          <option value="N/A">N/A</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Trend</label>
+        <select id="f-trend">
+          <option value="Rising">Rising</option>
+          <option value="Falling">Falling</option>
+          <option value="Stable">Stable</option>
+          <option value="Manipulated">Manipulated</option>
+          <option value="N/A">N/A</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Count</label>
+        <input type="number" id="f-count" min="0" step="1">
+      </div>
+      <div class="field">
+        <label>Image</label>
+        <div id="f-image-preview" style="width:100%; height:110px; border-radius:8px; border:1px dashed var(--line); background:var(--bg-soft); display:flex; align-items:center; justify-content:center; overflow:hidden; margin-bottom:8px; color:var(--text-faint); font-size:11px;">No image</div>
+        <input type="file" id="f-image" accept="image/*">
+        <div id="f-image-remove" style="display:none; margin-top:8px; font-size:11px; color:var(--danger); cursor:pointer; text-decoration:underline;">Remove image</div>
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <textarea id="f-desc"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" id="cancelBtn">Cancel</button>
+        <button type="submit" class="btn-save">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
