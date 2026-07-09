@@ -2,7 +2,8 @@ const CAT_COLORS = {
   "LTM": "#a389f4",
   "Ranked": "#e8b94f",
   "Top Spenders": "#4fd1a5",
-  "Other Swords": "#5fc2ff"
+  "Other Swords": "#5fc2ff",
+  "Explosions": "#ff6a6a"
 };
 
 const TREND_ICON = {
@@ -15,37 +16,46 @@ const TREND_ICON = {
 
 // Tempering scale colors (low value -> high value), matches CSS gradient stops
 const TEMPER_STOPS = ["#4a5a78","#5573c9","#7d5fd9","#a34fd0","#d94f9e","#e8636b","#e88a4f","#efab4a","#f4cf5c"];
+const MAX_EDIT_VALUE = 10000000;
+const API_URL = "/api/swords";
 
-// ---- persisted edits ----
-const STORAGE_KEY = "bbts_overrides_v1";
+// ---- shared sword data (persisted server-side, visible to every visitor) ----
+let ALL_SWORDS = [];
+let minV = 0;
+let maxV = 0;
 
-function loadOverrides(){
-  try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : {};
-  }catch(e){
-    return {};
-  }
+function computeMinMax(){
+  const values = ALL_SWORDS.map(s => s.v);
+  minV = values.length ? Math.min(...values) : 0;
+  maxV = values.length ? Math.max(...values) : 0;
 }
 
-function saveOverrides(overrides){
-  try{
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides));
-  }catch(e){
-    console.error("Could not save edits:", e);
-  }
+async function fetchSwords(){
+  const res = await fetch(API_URL);
+  if(!res.ok) throw new Error("Failed to load swords");
+  ALL_SWORDS = await res.json();
+  computeMinMax();
 }
-
-let overrides = loadOverrides();
 
 // ---- editor access gate ----
 const EDITOR_PASSWORD = "Bigkunfupandadihh";
 const UNLOCK_KEY = "bbts_editor_unlocked";
+const SESSION_PW_KEY = "bbts_editor_pw";
 let isUnlocked = sessionStorage.getItem(UNLOCK_KEY) === "true";
+let editorPassword = sessionStorage.getItem(SESSION_PW_KEY) || null;
+if(isUnlocked && !editorPassword) isUnlocked = false;
+
+function authHeaders(){
+  return { "Content-Type": "application/json", "x-editor-password": editorPassword || "" };
+}
 
 function setUnlocked(state){
   isUnlocked = state;
   sessionStorage.setItem(UNLOCK_KEY, state ? "true" : "false");
+  if(!state){
+    editorPassword = null;
+    sessionStorage.removeItem(SESSION_PW_KEY);
+  }
   document.getElementById('editToolbar').style.display = state ? "flex" : "none";
   const lockIcon = document.getElementById('lockIcon');
   lockIcon.innerHTML = state
@@ -64,23 +74,16 @@ document.getElementById('lockBtn').addEventListener('click', () => {
   const attempt = window.prompt("Enter editor password:");
   if(attempt === null) return;
   if(attempt === EDITOR_PASSWORD){
+    editorPassword = attempt;
+    sessionStorage.setItem(SESSION_PW_KEY, attempt);
     setUnlocked(true);
   } else {
     alert("Incorrect password.");
   }
 });
 
-// Merge base SWORDS with any saved edits (keyed by name)
-function getMergedSwords(){
-  return SWORDS.map(s => overrides[s.n] ? { ...s, ...overrides[s.n] } : s);
-}
-
-const values = SWORDS.map(s => s.v);
-const minV = Math.min(...values);
-const maxV = Math.max(...values);
-
 function temperColor(v){
-  const pct = (v - minV) / (maxV - minV);
+  const pct = maxV === minV ? 0 : (v - minV) / (maxV - minV);
   const idx = Math.min(TEMPER_STOPS.length - 1, Math.floor(pct * (TEMPER_STOPS.length - 1)));
   return TEMPER_STOPS[idx];
 }
@@ -99,7 +102,7 @@ let activeCategory = "All";
 let searchTerm = "";
 let sortMode = "value-desc";
 
-const categories = ["All", "LTM", "Ranked", "Top Spenders", "Other Swords"];
+const categories = ["All", "LTM", "Ranked", "Top Spenders", "Other Swords", "Explosions"];
 
 // ---- chips ----
 function renderChips(){
@@ -119,7 +122,7 @@ function renderChips(){
 
 // ---- grid ----
 function getFiltered(){
-  let list = getMergedSwords().filter(s => {
+  let list = ALL_SWORDS.filter(s => {
     const matchesCat = activeCategory === "All" || s.c === activeCategory;
     const matchesSearch = s.n.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCat && matchesSearch;
@@ -142,7 +145,6 @@ function cardHTML(s){
   const trendClass = s.t.replace(/[^A-Za-z]/g, '') || "NA";
   const icon = TREND_ICON[s.t] || TREND_ICON["N/A"];
   const desc = s.desc ? `<div class="card-desc">${s.desc}</div>` : "";
-  const isEdited = !!overrides[s.n];
 
   return `
   <div class="card" style="--tcolor:${tColor}">
@@ -161,8 +163,8 @@ function cardHTML(s){
     <div class="card-footer">
       <div class="card-updated">UPDATED ${fmtDate(s.u).toUpperCase()}</div>
       <div style="display:flex; align-items:center; gap:8px;">
-        ${isEdited ? '<span class="edited-tag">Edited</span>' : ''}
-        ${isUnlocked ? `<div class="edit-btn" data-edit="${s.n}" title="Edit">${PENCIL_ICON}</div>` : ''}
+        ${s.edited ? '<span class="edited-tag">Edited</span>' : ''}
+        ${isUnlocked ? `<div class="edit-btn" data-edit="${s.id}" title="Edit">${PENCIL_ICON}</div>` : ''}
       </div>
     </div>
   </div>`;
@@ -180,21 +182,25 @@ function renderGrid(){
     gridEl.innerHTML = filtered.map(cardHTML).join('');
   }
   gridEl.querySelectorAll('.edit-btn').forEach(btn => {
-    btn.addEventListener('click', () => openEditModal(btn.dataset.edit));
+    btn.addEventListener('click', () => openEditModal(Number(btn.dataset.edit)));
   });
 }
 
 // ---- last updated (most recent date in dataset) ----
 function renderLastUpdated(){
-  const data = getMergedSwords();
-  const latest = data.reduce((a,b) => new Date(a.u) > new Date(b.u) ? a : b);
+  if(!ALL_SWORDS.length){
+    document.getElementById('lastUpdated').textContent = '—';
+    return;
+  }
+  const latest = ALL_SWORDS.reduce((a,b) => new Date(a.u) > new Date(b.u) ? a : b);
   document.getElementById('lastUpdated').textContent = fmtDate(latest.u);
 }
 
 // ---- edit modal ----
 const modalOverlay = document.getElementById('modalOverlay');
 const editForm = document.getElementById('editForm');
-let editingName = null;
+let editingId = null;
+let isAddingSword = false;
 let pendingImage = undefined; // undefined = no change, null = removed, dataURL = new image
 
 function updateImagePreview(src){
@@ -226,13 +232,16 @@ document.getElementById('f-image-remove').addEventListener('click', () => {
   updateImagePreview(null);
 });
 
-function openEditModal(name){
-  const sword = getMergedSwords().find(s => s.n === name);
+function openEditModal(id){
+  const sword = ALL_SWORDS.find(s => s.id === id);
   if(!sword) return;
-  editingName = name;
+  editingId = id;
+  isAddingSword = false;
   pendingImage = undefined;
+  document.getElementById('modalTitle').textContent = 'Edit Sword';
   document.getElementById('f-image').value = '';
   document.getElementById('f-name').value = sword.n;
+  document.getElementById('f-name').disabled = false;
   document.getElementById('f-cat').value = sword.c;
   document.getElementById('f-value').value = sword.v;
   document.getElementById('f-demand').value = sword.d;
@@ -243,38 +252,86 @@ function openEditModal(name){
   modalOverlay.classList.add('show');
 }
 
-function closeEditModal(){
-  modalOverlay.classList.remove('show');
-  editingName = null;
+function openAddModal(){
+  editingId = null;
+  isAddingSword = true;
+  pendingImage = undefined;
+  document.getElementById('modalTitle').textContent = 'Add Sword';
+  document.getElementById('f-image').value = '';
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-name').disabled = false;
+  document.getElementById('f-cat').value = activeCategory !== 'All' ? activeCategory : 'Other Swords';
+  document.getElementById('f-value').value = '';
+  document.getElementById('f-demand').value = 'Medium';
+  document.getElementById('f-trend').value = 'Stable';
+  document.getElementById('f-count').value = '';
+  document.getElementById('f-desc').value = '';
+  updateImagePreview(null);
+  modalOverlay.classList.add('show');
+  document.getElementById('f-name').focus();
 }
 
-editForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-  if(!editingName) return;
-  const countVal = document.getElementById('f-count').value;
-  const existing = overrides[editingName] || {};
-  const currentImg = getMergedSwords().find(s => s.n === editingName)?.img;
-  let imgValue;
-  if(pendingImage === undefined) imgValue = currentImg; // no change
-  else if(pendingImage === null) imgValue = undefined; // removed
-  else imgValue = pendingImage; // new upload
+function closeEditModal(){
+  modalOverlay.classList.remove('show');
+  editingId = null;
+  isAddingSword = false;
+}
 
-  overrides[editingName] = {
+editForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if(!isAddingSword && editingId === null) return;
+  const valueInput = document.getElementById('f-value');
+  const editedValue = Math.min(Number(valueInput.value), MAX_EDIT_VALUE);
+  const countVal = document.getElementById('f-count').value;
+  const swordName = document.getElementById('f-name').value.trim();
+
+  if(!swordName){
+    alert("Enter a sword name.");
+    return;
+  }
+  const duplicate = ALL_SWORDS.some(s => s.n.toLowerCase() === swordName.toLowerCase() && s.id !== editingId);
+  if(duplicate){
+    alert("A sword with that name already exists.");
+    return;
+  }
+
+  const payload = {
+    n: swordName,
     c: document.getElementById('f-cat').value,
-    v: Number(document.getElementById('f-value').value),
+    v: editedValue,
     d: document.getElementById('f-demand').value,
     t: document.getElementById('f-trend').value,
     ct: countVal === '' ? null : Number(countVal),
     desc: document.getElementById('f-desc').value,
-    img: imgValue,
-    u: new Date().toISOString().slice(0,10)
   };
-  saveOverrides(overrides);
-  closeEditModal();
-  renderGrid();
-  renderLastUpdated();
+  if(pendingImage !== undefined) payload.img = pendingImage;
+
+  const saveBtn = editForm.querySelector('.btn-save');
+  saveBtn.disabled = true;
+  try{
+    const res = await fetch(isAddingSword ? API_URL : `${API_URL}/${editingId}`, {
+      method: isAddingSword ? 'POST' : 'PUT',
+      headers: authHeaders(),
+      body: JSON.stringify(payload)
+    });
+    if(!res.ok){
+      const err = await res.json().catch(() => ({}));
+      alert(err.error || "Could not save this sword.");
+      return;
+    }
+    await fetchSwords();
+    closeEditModal();
+    renderGrid();
+    renderLastUpdated();
+  }catch(err){
+    console.error(err);
+    alert("Could not reach the server. Please try again.");
+  }finally{
+    saveBtn.disabled = false;
+  }
 });
 
+document.getElementById('addSwordBtn').addEventListener('click', openAddModal);
 document.getElementById('cancelBtn').addEventListener('click', closeEditModal);
 modalOverlay.addEventListener('click', (e) => {
   if(e.target === modalOverlay) closeEditModal();
@@ -283,10 +340,9 @@ document.addEventListener('keydown', (e) => {
   if(e.key === 'Escape') closeEditModal();
 });
 
-// ---- export edited data.js ----
+// ---- export current data.js snapshot ----
 function buildDataFileText(){
-  const data = getMergedSwords();
-  const lines = data.map(s => {
+  const lines = ALL_SWORDS.map(s => {
     const desc = (s.desc || '').replace(/"/g, '\\"');
     const ct = s.ct === null || s.ct === undefined ? 'null' : s.ct;
     const img = s.img ? `,img:${JSON.stringify(s.img)}` : '';
@@ -306,12 +362,22 @@ document.getElementById('exportBtn').addEventListener('click', () => {
   URL.revokeObjectURL(url);
 });
 
-document.getElementById('resetBtn').addEventListener('click', () => {
-  if(!confirm('This clears every edit saved in this browser and reloads the original values. Continue?')) return;
-  overrides = {};
-  saveOverrides(overrides);
-  renderGrid();
-  renderLastUpdated();
+document.getElementById('resetBtn').addEventListener('click', async () => {
+  if(!confirm('This clears every saved edit for all visitors and restores the original values. Continue?')) return;
+  try{
+    const res = await fetch(`${API_URL}/reset`, { method: 'POST', headers: authHeaders() });
+    if(!res.ok){
+      const err = await res.json().catch(() => ({}));
+      alert(err.error || "Could not reset the data.");
+      return;
+    }
+    await fetchSwords();
+    renderGrid();
+    renderLastUpdated();
+  }catch(err){
+    console.error(err);
+    alert("Could not reach the server. Please try again.");
+  }
 });
 
 // ---- events ----
@@ -326,6 +392,15 @@ document.getElementById('sortSelect').addEventListener('change', (e) => {
 
 // ---- init ----
 renderChips();
-renderGrid();
-renderLastUpdated();
-setUnlocked(isUnlocked);
+const emptyEl = document.getElementById('empty');
+emptyEl.textContent = 'Loading the value list…';
+emptyEl.classList.add('show');
+fetchSwords()
+  .then(() => {
+    setUnlocked(isUnlocked);
+    renderLastUpdated();
+  })
+  .catch(() => {
+    emptyEl.textContent = 'Could not load the value list. Please refresh.';
+    emptyEl.classList.add('show');
+  });
