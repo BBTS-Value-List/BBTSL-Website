@@ -1,3 +1,10 @@
+// ============================================================
+// FILL THESE IN with your own Supabase project's values
+// (Supabase dashboard -> Project Settings -> API)
+// ============================================================
+const SUPABASE_URL = "https://YOUR-PROJECT-REF.supabase.co";
+const SUPABASE_ANON_KEY = "YOUR-ANON-PUBLIC-KEY";
+
 const CAT_COLORS = {
   "LTM": "#a389f4",
   "Ranked": "#e8b94f",
@@ -16,55 +23,51 @@ const TREND_ICON = {
 
 const TEMPER_STOPS = ["#4a5a78","#5573c9","#7d5fd9","#a34fd0","#d94f9e","#e8636b","#e88a4f","#efab4a","#f4cf5c"];
 const MAX_EDIT_VALUE = 10000000;
-const EDITOR_PASSWORD = "Bigkunfupandadihh";
 
-// ---- persisted edits (this browser only) ----
-const OVERRIDES_KEY = "bbts_overrides_v2";
-const ADDED_KEY = "bbts_added_v2";
-const DELETED_KEY = "bbts_deleted_v2";
+let ALL_SWORDS = [];
+let minV = 0;
+let maxV = 0;
 
-function loadJSON(key, fallback){
-  try{
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
-  }catch(e){ return fallback; }
-}
-function saveJSON(key, value){
-  try{ localStorage.setItem(key, JSON.stringify(value)); }
-  catch(e){ console.error("Could not save:", e); }
-}
-
-let overrides = loadJSON(OVERRIDES_KEY, {});   // { id: {partial fields} }
-let added = loadJSON(ADDED_KEY, []);           // [ full sword objects ]
-let deleted = loadJSON(DELETED_KEY, []);       // [ id, id, ... ]
-
-let nextId = Math.max(99, ...added.map(s => s.id)) + 1;
-
-function getMergedSwords(){
-  const base = SWORDS
-    .filter(s => !deleted.includes(s.id))
-    .map(s => overrides[s.id] ? { ...s, ...overrides[s.id] } : s);
-  const extra = added
-    .filter(s => !deleted.includes(s.id))
-    .map(s => overrides[s.id] ? { ...s, ...overrides[s.id] } : s);
-  return [...base, ...extra];
-}
-
-let minV = 0, maxV = 0;
 function computeMinMax(){
-  const values = getMergedSwords().map(s => s.v);
+  const values = ALL_SWORDS.map(s => s.v);
   minV = values.length ? Math.min(...values) : 0;
   maxV = values.length ? Math.max(...values) : 0;
 }
-computeMinMax();
+
+// ---- Supabase client ----
+// Rebuilt whenever the editor password changes, so writes carry the
+// x-editor-password header that Supabase's row-level security checks.
+let sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+function rebuildClient(password){
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    global: { headers: password ? { "x-editor-password": password } : {} }
+  });
+}
+
+async function fetchSwords(){
+  const { data, error } = await sb.from('swords').select('*').order('v', { ascending: false });
+  if(error) throw error;
+  ALL_SWORDS = data;
+  computeMinMax();
+}
 
 // ---- editor access gate ----
 const UNLOCK_KEY = "bbts_editor_unlocked";
+const SESSION_PW_KEY = "bbts_editor_pw";
 let isUnlocked = sessionStorage.getItem(UNLOCK_KEY) === "true";
+let editorPassword = sessionStorage.getItem(SESSION_PW_KEY) || null;
+if(isUnlocked && editorPassword) rebuildClient(editorPassword);
+if(isUnlocked && !editorPassword) isUnlocked = false;
 
 function setUnlocked(state){
   isUnlocked = state;
   sessionStorage.setItem(UNLOCK_KEY, state ? "true" : "false");
+  if(!state){
+    editorPassword = null;
+    sessionStorage.removeItem(SESSION_PW_KEY);
+    rebuildClient(null);
+  }
   document.getElementById('editToolbar').style.display = state ? "flex" : "none";
   const lockIcon = document.getElementById('lockIcon');
   lockIcon.innerHTML = state
@@ -81,12 +84,14 @@ document.getElementById('lockBtn').addEventListener('click', () => {
     return;
   }
   const attempt = window.prompt("Enter editor password:");
-  if(attempt === null) return;
-  if(attempt === EDITOR_PASSWORD){
-    setUnlocked(true);
-  } else {
-    alert("Incorrect password.");
-  }
+  if(attempt === null || attempt === "") return;
+  editorPassword = attempt;
+  sessionStorage.setItem(SESSION_PW_KEY, attempt);
+  rebuildClient(attempt);
+  setUnlocked(true);
+  // Note: the password isn't checked here in the browser (that's on purpose --
+  // it's not shipped in this file). If it's wrong, the pencil icons will show,
+  // but saving/adding/resetting will fail with a "not authorized" alert.
 });
 
 function temperColor(v){
@@ -95,7 +100,10 @@ function temperColor(v){
   return TEMPER_STOPS[idx];
 }
 
-function fmtValue(v){ return v.toLocaleString('en-US'); }
+function fmtValue(v){
+  return v.toLocaleString('en-US');
+}
+
 function fmtDate(iso){
   const d = new Date(iso + "T00:00:00");
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -105,8 +113,10 @@ function fmtDate(iso){
 let activeCategory = "All";
 let searchTerm = "";
 let sortMode = "value-desc";
+
 const categories = ["All", "LTM", "Ranked", "Top Spenders", "Other Swords", "Explosions"];
 
+// ---- chips ----
 function renderChips(){
   const chipsEl = document.getElementById('chips');
   chipsEl.innerHTML = categories.map(cat => {
@@ -122,12 +132,14 @@ function renderChips(){
   });
 }
 
+// ---- grid ----
 function getFiltered(){
-  let list = getMergedSwords().filter(s => {
+  let list = ALL_SWORDS.filter(s => {
     const matchesCat = activeCategory === "All" || s.c === activeCategory;
     const matchesSearch = s.n.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCat && matchesSearch;
   });
+
   switch(sortMode){
     case "value-desc": list.sort((a,b) => b.v - a.v); break;
     case "value-asc": list.sort((a,b) => a.v - b.v); break;
@@ -144,8 +156,7 @@ function cardHTML(s){
   const tColor = temperColor(s.v);
   const trendClass = s.t.replace(/[^A-Za-z]/g, '') || "NA";
   const icon = TREND_ICON[s.t] || TREND_ICON["N/A"];
-  const desc = s.desc ? `<div class="card-desc">${s.desc}</div>` : "";
-  const isEdited = !!overrides[s.id];
+  const desc = s.descr ? `<div class="card-desc">${s.descr}</div>` : "";
 
   return `
   <div class="card" style="--tcolor:${tColor}">
@@ -164,7 +175,7 @@ function cardHTML(s){
     <div class="card-footer">
       <div class="card-updated">UPDATED ${fmtDate(s.u).toUpperCase()}</div>
       <div style="display:flex; align-items:center; gap:8px;">
-        ${isEdited ? '<span class="edited-tag">Edited</span>' : ''}
+        ${s.edited ? '<span class="edited-tag">Edited</span>' : ''}
         ${isUnlocked ? `<div class="edit-btn" data-edit="${s.id}" title="Edit">${PENCIL_ICON}</div>` : ''}
       </div>
     </div>
@@ -177,7 +188,6 @@ function renderGrid(){
   const emptyEl = document.getElementById('empty');
   if(filtered.length === 0){
     gridEl.innerHTML = "";
-    emptyEl.textContent = "No blades match that search. Try another name.";
     emptyEl.classList.add('show');
   } else {
     emptyEl.classList.remove('show');
@@ -189,9 +199,11 @@ function renderGrid(){
 }
 
 function renderLastUpdated(){
-  const data = getMergedSwords();
-  if(!data.length){ document.getElementById('lastUpdated').textContent = '—'; return; }
-  const latest = data.reduce((a,b) => new Date(a.u) > new Date(b.u) ? a : b);
+  if(!ALL_SWORDS.length){
+    document.getElementById('lastUpdated').textContent = '—';
+    return;
+  }
+  const latest = ALL_SWORDS.reduce((a,b) => new Date(a.u) > new Date(b.u) ? a : b);
   document.getElementById('lastUpdated').textContent = fmtDate(latest.u);
 }
 
@@ -232,7 +244,7 @@ document.getElementById('f-image-remove').addEventListener('click', () => {
 });
 
 function openEditModal(id){
-  const sword = getMergedSwords().find(s => s.id === id);
+  const sword = ALL_SWORDS.find(s => s.id === id);
   if(!sword) return;
   editingId = id;
   isAddingSword = false;
@@ -245,7 +257,7 @@ function openEditModal(id){
   document.getElementById('f-demand').value = sword.d;
   document.getElementById('f-trend').value = sword.t;
   document.getElementById('f-count').value = sword.ct ?? '';
-  document.getElementById('f-desc').value = sword.desc || '';
+  document.getElementById('f-desc').value = sword.descr || '';
   updateImagePreview(sword.img || null);
   modalOverlay.classList.add('show');
 }
@@ -274,57 +286,79 @@ function closeEditModal(){
   isAddingSword = false;
 }
 
-editForm.addEventListener('submit', (e) => {
+editForm.addEventListener('submit', async (e) => {
   e.preventDefault();
+  if(!isAddingSword && editingId === null) return;
   const editedValue = Math.min(Number(document.getElementById('f-value').value) || 0, MAX_EDIT_VALUE);
   const countVal = document.getElementById('f-count').value;
   const swordName = document.getElementById('f-name').value.trim();
 
-  if(!swordName){ alert("Enter a sword name."); return; }
-  const duplicate = getMergedSwords().some(s => s.n.toLowerCase() === swordName.toLowerCase() && s.id !== editingId);
-  if(duplicate){ alert("A sword with that name already exists."); return; }
+  if(!swordName){
+    alert("Enter a sword name.");
+    return;
+  }
+  const duplicate = ALL_SWORDS.some(s => s.n.toLowerCase() === swordName.toLowerCase() && s.id !== editingId);
+  if(duplicate){
+    alert("A sword with that name already exists.");
+    return;
+  }
 
-  const fields = {
+  const payload = {
     n: swordName,
     c: document.getElementById('f-cat').value,
     v: editedValue,
     d: document.getElementById('f-demand').value,
     t: document.getElementById('f-trend').value,
     ct: countVal === '' ? null : Number(countVal),
-    desc: document.getElementById('f-desc').value,
-    u: new Date().toISOString().slice(0,10)
+    descr: document.getElementById('f-desc').value,
+    u: new Date().toISOString().slice(0,10),
+    edited: true
   };
-  if(pendingImage !== undefined) fields.img = pendingImage === null ? undefined : pendingImage;
+  if(pendingImage !== undefined) payload.img = pendingImage === null ? null : pendingImage;
 
-  if(isAddingSword){
-    const newSword = { id: nextId++, img: undefined, ...fields };
-    added.push(newSword);
-    saveJSON(ADDED_KEY, added);
-  } else {
-    overrides[editingId] = { ...(overrides[editingId] || {}), ...fields };
-    saveJSON(OVERRIDES_KEY, overrides);
+  const saveBtn = editForm.querySelector('.btn-save');
+  saveBtn.disabled = true;
+  try{
+    const query = isAddingSword
+      ? sb.from('swords').insert([payload])
+      : sb.from('swords').update(payload).eq('id', editingId);
+    const { error } = await query;
+    if(error){
+      alert(error.message.includes('row-level security')
+        ? "Wrong editor password — this change wasn't saved."
+        : (error.message || "Could not save this sword."));
+      return;
+    }
+    await fetchSwords();
+    closeEditModal();
+    renderGrid();
+    renderLastUpdated();
+  }catch(err){
+    console.error(err);
+    alert("Could not reach the database. Please try again.");
+  }finally{
+    saveBtn.disabled = false;
   }
-
-  computeMinMax();
-  closeEditModal();
-  renderGrid();
-  renderLastUpdated();
 });
 
 document.getElementById('addSwordBtn').addEventListener('click', openAddModal);
 document.getElementById('cancelBtn').addEventListener('click', closeEditModal);
-modalOverlay.addEventListener('click', (e) => { if(e.target === modalOverlay) closeEditModal(); });
-document.addEventListener('keydown', (e) => { if(e.key === 'Escape') closeEditModal(); });
+modalOverlay.addEventListener('click', (e) => {
+  if(e.target === modalOverlay) closeEditModal();
+});
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape') closeEditModal();
+});
 
 // ---- export current snapshot ----
 function buildDataFileText(){
-  const lines = getMergedSwords().map(s => {
-    const desc = (s.desc || '').replace(/"/g, '\\"');
+  const lines = ALL_SWORDS.map(s => {
+    const desc = (s.descr || '').replace(/"/g, '\\"');
     const ct = s.ct === null || s.ct === undefined ? 'null' : s.ct;
     const img = s.img ? `,img:${JSON.stringify(s.img)}` : '';
-    return `{id:${s.id},n:${JSON.stringify(s.n)},c:${JSON.stringify(s.c)},v:${s.v},d:${JSON.stringify(s.d)},t:${JSON.stringify(s.t)},ct:${ct},u:${JSON.stringify(s.u)},desc:"${desc}"${img}}`;
+    return `{n:${JSON.stringify(s.n)},c:${JSON.stringify(s.c)},v:${s.v},d:${JSON.stringify(s.d)},t:${JSON.stringify(s.t)},ct:${ct},u:${JSON.stringify(s.u)},desc:"${desc}"${img}},`;
   });
-  return `const SWORDS = [\n${lines.join(',\n')}\n];\n`;
+  return `const SWORDS = [\n${lines.join('\n')}\n];\n`;
 }
 
 document.getElementById('exportBtn').addEventListener('click', () => {
@@ -338,18 +372,29 @@ document.getElementById('exportBtn').addEventListener('click', () => {
   URL.revokeObjectURL(url);
 });
 
-document.getElementById('resetBtn').addEventListener('click', () => {
-  if(!confirm('This clears every edit saved in this browser and reloads the original values. Continue?')) return;
-  overrides = {};
-  added = [];
-  deleted = [];
-  saveJSON(OVERRIDES_KEY, overrides);
-  saveJSON(ADDED_KEY, added);
-  saveJSON(DELETED_KEY, deleted);
-  nextId = 100;
-  computeMinMax();
-  renderGrid();
-  renderLastUpdated();
+document.getElementById('resetBtn').addEventListener('click', async () => {
+  if(!confirm('This clears every saved edit for all visitors and restores the original values. Continue?')) return;
+  try{
+    const { error: delError } = await sb.from('swords').delete().gt('id', 0);
+    if(delError){
+      alert(delError.message.includes('row-level security')
+        ? "Wrong editor password — nothing was reset."
+        : (delError.message || "Could not reset the data."));
+      return;
+    }
+    const seeded = DEFAULT_SWORDS.map(s => ({ ...s, edited: false }));
+    const { error: insError } = await sb.from('swords').insert(seeded);
+    if(insError){
+      alert(insError.message || "Reset partially failed — the list may be empty. Try again.");
+      return;
+    }
+    await fetchSwords();
+    renderGrid();
+    renderLastUpdated();
+  }catch(err){
+    console.error(err);
+    alert("Could not reach the database. Please try again.");
+  }
 });
 
 // ---- search/sort events ----
@@ -364,6 +409,16 @@ document.getElementById('sortSelect').addEventListener('change', (e) => {
 
 // ---- init ----
 renderChips();
-renderGrid();
-renderLastUpdated();
-setUnlocked(isUnlocked);
+const emptyEl = document.getElementById('empty');
+emptyEl.textContent = 'Loading the value list…';
+emptyEl.classList.add('show');
+fetchSwords()
+  .then(() => {
+    setUnlocked(isUnlocked);
+    renderLastUpdated();
+  })
+  .catch((err) => {
+    console.error(err);
+    emptyEl.textContent = 'Could not load the value list. Check the Supabase setup in app.js.';
+    emptyEl.classList.add('show');
+  });
