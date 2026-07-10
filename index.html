@@ -267,6 +267,8 @@
   .btn-save:hover{background:#ff9a55;}
   .btn-cancel{background:transparent; color:var(--text-dim);}
   .btn-cancel:hover{color:var(--text);}
+  .btn-delete{background:transparent; border-color:var(--danger); color:var(--danger); flex:none; padding:11px 16px;}
+  .btn-delete:hover{background:var(--danger); color:#1a0505;}
 
   .empty{
     max-width:1180px; margin:0 auto; padding:60px 28px; text-align:center; color:var(--text-faint);
@@ -407,6 +409,7 @@
         <textarea id="f-desc"></textarea>
       </div>
       <div class="modal-actions">
+        <button type="button" class="btn-delete" id="deleteBtn" style="display:none;">Delete</button>
         <button type="button" class="btn-cancel" id="cancelBtn">Cancel</button>
         <button type="submit" class="btn-save">Save Changes</button>
       </div>
