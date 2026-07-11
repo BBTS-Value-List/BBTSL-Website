@@ -403,6 +403,12 @@ document.getElementById('exportBtn').addEventListener('click', () => {
 });
 
 document.getElementById('resetBtn').addEventListener('click', async () => {
+  const pw = window.prompt("This resets the list for every visitor. Enter the editor password to confirm:");
+  if(pw === null || pw === "") return;
+  rebuildClient(pw);
+  editorPassword = pw;
+  sessionStorage.setItem(SESSION_PW_KEY, pw);
+
   if(!confirm('This clears every saved edit for all visitors and restores the original values. Continue?')) return;
   try{
     const { error: delError } = await sb.from('swords').delete().gt('id', 0);
