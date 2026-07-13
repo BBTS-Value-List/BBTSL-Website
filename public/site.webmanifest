@@ -1,0 +1,17 @@
+{
+  "name": "BBTSL Blade Ball Value List",
+  "short_name": "BBTSL",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#12151a",
+  "theme_color": "#12151a",
+  "description": "Tracked Blade Ball sword values for rare items.",
+  "icons": [
+    {
+      "src": "/og-image.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

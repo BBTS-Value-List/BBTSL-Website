@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">BBTSL Blade Ball Value List</title>
+  <desc id="desc">Dark themed preview image for the BBTSL Blade Ball Value List website.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#12151a"/>
+      <stop offset="100%" stop-color="#1b2230"/>
+    </linearGradient>
+    <radialGradient id="glowA" cx="0.15" cy="0.1" r="0.7">
+      <stop offset="0%" stop-color="#ff8a3d" stop-opacity="0.38"/>
+      <stop offset="100%" stop-color="#ff8a3d" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowB" cx="0.9" cy="0.2" r="0.6">
+      <stop offset="0%" stop-color="#5fc2ff" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#5fc2ff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" rx="36" fill="url(#bg)"/>
+  <rect width="1200" height="630" rx="36" fill="url(#glowA)"/>
+  <rect width="1200" height="630" rx="36" fill="url(#glowB)"/>
+  <rect x="72" y="72" width="1056" height="486" rx="28" fill="#12151a" stroke="rgba(255,255,255,0.08)"/>
+  <g transform="translate(110 122)">
+    <path d="M0 160L134 26M134 26L112 -48L206 -18L178 52L134 26Z" fill="none" stroke="#ff8a3d" stroke-width="18" stroke-linejoin="round"/>
+    <circle cx="0" cy="160" r="14" fill="#ff8a3d"/>
+  </g>
+  <text x="314" y="220" fill="#f2f5fb" font-family="Rajdhani, Arial, sans-serif" font-size="74" font-weight="700" letter-spacing="2">BBTSL</text>
+  <text x="314" y="286" fill="#d2d8e4" font-family="IBM Plex Sans, Arial, sans-serif" font-size="34" font-weight="600">Blade Ball Value List</text>
+  <text x="314" y="350" fill="#8b93a5" font-family="IBM Plex Sans, Arial, sans-serif" font-size="26">
+    Track demand, trend, count, value, and descriptions for rare swords.
+  </text>
+  <g transform="translate(314 414)">
+    <rect width="168" height="54" rx="27" fill="rgba(163,137,244,0.12)" stroke="#a389f4"/>
+    <text x="84" y="34" text-anchor="middle" fill="#d9ccff" font-family="IBM Plex Sans, Arial, sans-serif" font-size="21" font-weight="600">LTM</text>
+    <rect x="190" width="202" height="54" rx="27" fill="rgba(79,209,165,0.12)" stroke="#4fd1a5"/>
+    <text x="291" y="34" text-anchor="middle" fill="#baf3de" font-family="IBM Plex Sans, Arial, sans-serif" font-size="21" font-weight="600">TOP SPENDERS</text>
+    <rect x="414" width="194" height="54" rx="27" fill="rgba(95,194,255,0.12)" stroke="#5fc2ff"/>
+    <text x="511" y="34" text-anchor="middle" fill="#c7ebff" font-family="IBM Plex Sans, Arial, sans-serif" font-size="21" font-weight="600">OTHER SWORDS</text>
+  </g>
+  <text x="314" y="515" fill="#ff8a3d" font-family="JetBrains Mono, Consolas, monospace" font-size="34" font-weight="700">Community-tracked values. Dark-mode optimized.</text>
+</svg>

@@ -1,0 +1,16 @@
+{
+  "name": "bladeball-value-list",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "cf:dev": "wrangler dev",
+    "cf:deploy": "wrangler deploy",
+    "auth:hash-password": "node scripts/hash-password.mjs",
+    "auth:totp-secret": "node scripts/generate-totp-secret.mjs",
+    "auth:session-secret": "node scripts/generate-secret-token.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4.26.0"
+  }
+}

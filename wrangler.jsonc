@@ -1,0 +1,33 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "bladeball-value-list",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-07-13",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
+  "observability": {
+    "enabled": true
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "bladeball-value-list",
+      "database_id": "REPLACE_WITH_D1_DATABASE_ID"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "SWORD_IMAGES",
+      "bucket_name": "bladeball-value-list-images"
+    }
+  ],
+  "vars": {
+    "SITE_NAME": "BBTSL Blade Ball Value List",
+    "PUBLIC_SITE_URL": "https://bbtsl.lol",
+    "ADMIN_TOTP_DEFAULT_ISSUER": "BBTSL Blade Ball Value List",
+    "ADMIN_TOTP_DEFAULT_ACCOUNT": "bbtsl-admin"
+  }
+}

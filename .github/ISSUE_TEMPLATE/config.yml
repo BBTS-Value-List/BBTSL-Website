@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security report
+    url: mailto:bbtsl@pve.bio
+    about: Report vulnerabilities privately by email, not in public issues.
