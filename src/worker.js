@@ -1171,28 +1171,18 @@ function buildLlmsFullText(request, env) {
 function injectDynamicHeadMarkup(html, request, env) {
   const siteUrl = (env.PUBLIC_SITE_URL || new URL(request.url).origin).replace(/\/+$/g, "");
   const pageUrl = `${siteUrl}/`;
-  const imageUrl = `${siteUrl}/og-image.svg`;
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "CollectionPage",
-    name: env.SITE_NAME || "BBTSL Blade Ball Value List",
-    url: pageUrl,
-    description: "Tracked Blade Ball sword values with demand, trend, count, descriptions, and image-backed entries.",
-    isPartOf: {
-      "@type": "WebSite",
-      name: env.SITE_NAME || "BBTSL Blade Ball Value List",
-      url: siteUrl
-    }
-  };
+  const imageUrl = `${siteUrl}/og-image.png`;
 
   const markup = [
     `<link rel="canonical" href="${pageUrl}">`,
     `<meta property="og:url" content="${pageUrl}">`,
     `<meta property="og:image" content="${imageUrl}">`,
+    `<meta property="og:image:type" content="image/png">`,
+    `<meta property="og:image:width" content="96">`,
+    `<meta property="og:image:height" content="96">`,
     `<meta property="og:image:alt" content="BBTSL Blade Ball Value List preview image">`,
     `<meta name="twitter:image" content="${imageUrl}">`,
-    `<meta name="twitter:image:alt" content="BBTSL Blade Ball Value List preview image">`,
-    `<script type="application/ld+json">${JSON.stringify(structuredData)}</script>`
+    `<meta name="twitter:image:alt" content="BBTSL Blade Ball Value List preview image">`
   ].join("");
 
   return html.replace("<!-- dynamic-meta -->", markup);

@@ -8,9 +8,9 @@
   "description": "Tracked Blade Ball sword values for rare items.",
   "icons": [
     {
-      "src": "/og-image.svg",
-      "sizes": "512x512",
-      "type": "image/svg+xml",
+      "src": "/og-image.png",
+      "sizes": "96x96",
+      "type": "image/png",
       "purpose": "any"
     }
   ]
