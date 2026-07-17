@@ -518,7 +518,8 @@ async function handleUpdateSword(request, env, id, actor) {
 
   const payload = normalizeSwordPayload(await request.json());
   const { image, detailMedia, slashMedia, slashAudio } = await persistSwordMedia(env, payload, payload.n, existing);
-  const beforeSnapshot = serializeSword(existing);
+  const beforeMediaMap = await loadMediaDescriptorMap(env, collectSwordMediaKeys([existing]));
+  const beforeSnapshot = serializeSword(existing, beforeMediaMap);
 
   await env.DB.prepare(`
     UPDATE swords
@@ -571,6 +572,7 @@ async function handleDeleteSword(request, env, id, actor) {
   if (!existing) {
     throw new HttpError(404, "Sword not found.");
   }
+  const beforeMediaMap = await loadMediaDescriptorMap(env, collectSwordMediaKeys([existing]));
 
   await env.DB.prepare("DELETE FROM swords WHERE id = ?").bind(id).run();
   await writeAuditLog(env, {
@@ -580,7 +582,7 @@ async function handleDeleteSword(request, env, id, actor) {
     entityId: existing.id,
     entityPublicId: existing.card_id,
     summary: `Deleted ${existing.n}`,
-    beforeSnapshot: serializeSword(existing),
+    beforeSnapshot: serializeSword(existing, beforeMediaMap),
     afterSnapshot: null
   });
 
@@ -601,6 +603,8 @@ async function handleReset(request, env, actor, session) {
     FROM swords
     ORDER BY id ASC
   `).all();
+  const beforeResults = beforeRows.results || [];
+  const beforeMediaMap = await loadMediaDescriptorMap(env, collectSwordMediaKeys(beforeResults));
 
   await env.DB.batch([
     env.DB.prepare("DELETE FROM swords"),
@@ -617,6 +621,8 @@ async function handleReset(request, env, actor, session) {
     FROM swords
     ORDER BY id ASC
   `).all();
+  const afterResults = afterRows.results || [];
+  const afterMediaMap = await loadMediaDescriptorMap(env, collectSwordMediaKeys(afterResults));
 
   await writeAuditLog(env, {
     actor,
@@ -625,13 +631,13 @@ async function handleReset(request, env, actor, session) {
     entityId: null,
     entityPublicId: null,
     summary: "Reset swords to baseline",
-    beforeSnapshot: (beforeRows.results || []).map(serializeSword),
-    afterSnapshot: (afterRows.results || []).map(serializeSword)
+    beforeSnapshot: beforeResults.map((row) => serializeSword(row, beforeMediaMap)),
+    afterSnapshot: afterResults.map((row) => serializeSword(row, afterMediaMap))
   });
 
   return json({
     ok: true,
-    swords: (afterRows.results || []).map((row) => serializeSword(row))
+    swords: afterResults.map((row) => serializeSword(row, afterMediaMap))
   });
 }
 
@@ -1893,12 +1899,18 @@ async function readMediaBodyFromChunks(env, key, mediaSize) {
 
   const chunked = new Uint8Array(mediaSize);
   let chunkOffset = 0;
-  for (let chunkIndex = 0; chunkOffset < mediaSize; chunkIndex += 1) {
-    const row = await env.DB.prepare(`
-      SELECT chunk_data
-      FROM media_chunks
-      WHERE image_key = ? AND chunk_index = ?
-    `).bind(key, chunkIndex).first();
+  const chunkRowsResult = await env.DB.prepare(`
+    SELECT chunk_index, chunk_data
+    FROM media_chunks
+    WHERE image_key = ?
+    ORDER BY chunk_index ASC
+  `).bind(key).all();
+  const chunkRows = Array.isArray(chunkRowsResult?.results) ? chunkRowsResult.results : [];
+  for (let rowIndex = 0; rowIndex < chunkRows.length && chunkOffset < mediaSize; rowIndex += 1) {
+    const row = chunkRows[rowIndex];
+    if (Number(row?.chunk_index) !== rowIndex) {
+      break;
+    }
     const chunk = await readMediaBody(row?.chunk_data);
     const expectedLength = Math.min(D1_MEDIA_CHUNK_BYTES, mediaSize - chunkOffset);
     if (!chunk || chunk.byteLength !== expectedLength) {
@@ -2203,10 +2215,18 @@ async function backfillCardIds(env) {
     ORDER BY s.id ASC
   `).all();
 
+  const rowsToUpdate = [];
   for (const row of results || []) {
     const nextCardId = row.card_id || row.baseline_card_id || await generateUniqueCardId(env);
-    await env.DB.prepare("UPDATE swords SET card_id = ? WHERE id = ?").bind(nextCardId, row.id).run();
-    await env.DB.prepare("UPDATE sword_baseline SET card_id = ? WHERE id = ?").bind(nextCardId, row.id).run();
+    rowsToUpdate.push({ id: row.id, nextCardId });
+  }
+
+  const statements = rowsToUpdate.flatMap(({ id, nextCardId }) => ([
+    env.DB.prepare("UPDATE swords SET card_id = ? WHERE id = ?").bind(nextCardId, id),
+    env.DB.prepare("UPDATE sword_baseline SET card_id = ? WHERE id = ?").bind(nextCardId, id)
+  ]));
+  if (statements.length) {
+    await env.DB.batch(statements);
   }
 }
 
