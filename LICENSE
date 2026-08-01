@@ -1,0 +1,20 @@
+All Rights Reserved
+
+Copyright (c) 2026 BBTSL contributors.
+
+This repository is published for review and contribution through the project’s
+GitHub workflows. No permission is granted to copy, redistribute, sublicense,
+sell, publish modified versions, or use substantial portions of its code,
+design, media, or data outside that scope without prior written permission
+from the project owners.
+
+Machine-readable files such as `/.well-known/security.txt`, `robots.txt`,
+`llms.txt`, `llms-full.txt`, and `sitemap.xml` are operational policy and
+discovery files only. They do not grant any separate license to reuse the
+repository, its content, or the live site's data.
+
+Approved contributions accepted into this repository become part of that
+reserved codebase and remain subject to the same restrictions.
+
+Blade Ball, Roblox, and related names, marks, artwork, and property remain the
+property of their respective owners. See LEGAL.md for project notices.

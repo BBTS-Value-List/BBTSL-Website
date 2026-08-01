@@ -1,0 +1,93 @@
+.analytics-consent-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: end center;
+  padding: 1rem;
+  background: rgba(3, 5, 8, 0.72);
+  backdrop-filter: blur(5px);
+}
+
+.analytics-consent-dialog {
+  width: min(42rem, 100%);
+  padding: 1.2rem;
+  border: 1px solid rgba(255, 138, 61, 0.45);
+  border-radius: 0.9rem;
+  background: #171b21;
+  color: #f3f4f6;
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.45);
+}
+
+.analytics-consent-dialog h2 {
+  margin: 0 0 0.65rem;
+  font-size: 1.2rem;
+}
+
+.analytics-consent-dialog p {
+  margin: 0.55rem 0;
+  color: #cbd0d8;
+  line-height: 1.55;
+}
+
+.analytics-consent-dialog a {
+  color: #ffad75;
+}
+
+.analytics-consent-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.analytics-consent-actions button,
+.analytics-settings-button {
+  min-height: 2.6rem;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid #4b5563;
+  border-radius: 0.55rem;
+  background: #242a33;
+  color: #f9fafb;
+  font: inherit;
+  cursor: pointer;
+}
+
+.analytics-consent-actions button.primary {
+  border-color: #ff8a3d;
+  background: #ff8a3d;
+  color: #151515;
+  font-weight: 700;
+}
+
+.analytics-consent-actions button:focus-visible,
+.analytics-settings-button:focus-visible {
+  outline: 3px solid rgba(255, 138, 61, 0.45);
+  outline-offset: 2px;
+}
+
+.analytics-settings-button {
+  position: fixed;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  z-index: 9998;
+  min-height: 2.2rem;
+  padding: 0.4rem 0.65rem;
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(18, 21, 26, 0.94);
+  color: #cfd4dc;
+  font-size: 0.78rem;
+}
+
+@media (min-width: 720px) {
+  .analytics-consent-overlay {
+    place-items: end end;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .analytics-consent-overlay {
+    backdrop-filter: none;
+  }
+}

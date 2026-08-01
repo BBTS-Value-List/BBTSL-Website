@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="darkreader-lock">
+  <title>Blade Ball Top Spender List</title>
+  <meta name="description" content="Track and search Blade Ball Top Spender Items in one place.">
+  <meta name="theme-color" content="#12151a">
+  <meta name="color-scheme" content="dark">
+  <meta name="robots" content="index,follow">
+  <meta property="og:title" content="Blade Ball Top Spender List">
+  <meta property="og:description" content="Track and search Blade Ball Top Spender Items in one place.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Blade Ball Top Spender List">
+  <meta name="twitter:description" content="Track and search Blade Ball Top Spender Items in one place.">
+  <meta name="bbtsl-dynamic-meta" content="">
+  <link rel="icon" type="image/png" href="/og-image.png">
+  <link rel="apple-touch-icon" href="/og-image.png">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="manifest" href="/site.webmanifest">
+</head>
+<body>
+  <a class="skip-link" href="#mainContent">Skip to item list</a>
+  <div class="topbar">
+    <a class="brand" href="https://bbtsl.lol" aria-label="Go to BBTSL home">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 20L15 9M15 9L13 3L21 5L19 11L15 9Z" stroke="#ff8a3d" stroke-width="1.6" stroke-linejoin="round"/><circle cx="4" cy="20" r="1.4" fill="#ff8a3d"/></svg>
+      <div class="brand-text">
+        <div class="name">BBTSL.LOL</div>
+        <div class="sub">Top Spender List</div>
+      </div>
+    </a>
+    <div class="topbar-actions" id="topbarActions">
+      <a class="top-link" href="/team">Team</a>
+      <div class="topbar-meta">Last Updated: <span id="lastUpdated">Unavailable</span></div>
+    </div>
+  </div>
+
+  <main id="mainContent">
+    <section class="headline-shell" aria-labelledby="pageTitle">
+      <h1 id="pageTitle" class="page-title">Blade Ball Top Spender List</h1>
+      <p class="page-copy">Track and search Blade Ball Top Spender Items in one place.</p>
+    </section>
+
+    <section class="controls-shell">
+      <div class="controls">
+        <div class="search-wrap" role="search" aria-label="Search items">
+          <label class="sr-only" for="search">Search items by name, card ID, badge, trend, demand, rarity, or count</label>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input id="search" type="text" placeholder="Search Items..." autocomplete="off" aria-describedby="searchHelp">
+          <span id="searchHelp" class="sr-only">Filter the list by item name, card ID, badge, trend, demand, rarity, or count. You can also use terms like badge:emotes or id:0ZZ64S.</span>
+        </div>
+        <div class="chips" id="chips"></div>
+        <div class="sort-wrap">
+          <label class="sr-only" for="sortSelect">Sort items</label>
+          <select id="sortSelect" aria-label="Sort items">
+            <option value="value-desc">Value: High to Low</option>
+            <option value="value-asc">Value: Low to High</option>
+            <option value="name-asc">Name: A-Z</option>
+            <option value="updated-desc">Recently Updated</option>
+            <option value="count-desc">Count: High to Low</option>
+            <option value="count-asc">Count: Low to High</option>
+            <option value="demand-desc">Demand: High to Low</option>
+            <option value="demand-asc">Demand: Low to High</option>
+            <option value="trend-rank">Trend: Highest First</option>
+            <option value="favorites-only">Favorited</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="temper-strip" aria-hidden="true"><div class="bar"></div></div>
+      <div class="temper-labels"><span>HIGH VALUE</span><span>LOW VALUE</span></div>
+    </section>
+
+    <section class="grid" id="grid" aria-live="polite" aria-label="Top Spender item list"></section>
+    <div class="grid-sentinel" id="gridSentinel" aria-hidden="true"></div>
+    <div class="empty" id="empty" role="status">No items match that search.</div>
+  </main>
+
+  <div class="utility-dock utility-dock-left" id="auditDock"></div>
+  <div class="utility-dock utility-dock-right" id="identityDock"></div>
+  <button class="mobile-utility-trigger" id="mobileUtilityTrigger" type="button" aria-label="Open utility panel" hidden>
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7.75A1.75 1.75 0 0 1 5.75 6h4.1c.46 0 .9.182 1.226.507l1.168 1.168c.328.328.772.513 1.236.513h4.77A1.75 1.75 0 0 1 20 9.938v8.312A1.75 1.75 0 0 1 18.25 20h-12.5A1.75 1.75 0 0 1 4 18.25V7.75Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M4 10h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+  </button>
+
+  <div class="modal-overlay mobile-utility-overlay" id="mobileUtilityOverlay" hidden>
+    <div class="modal mobile-utility-modal" role="dialog" aria-modal="true" aria-labelledby="mobileUtilityTitle">
+      <button class="modal-close" id="mobileUtilityCloseBtn" type="button" aria-label="Close utility panel">×</button>
+      <h2 id="mobileUtilityTitle">Utilities</h2>
+      <div class="mobile-utility-stack">
+        <div class="mobile-utility-slot" id="mobileAuditDock"></div>
+        <div class="mobile-utility-slot" id="mobileIdentityDock"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="shortcutLoginOverlay" hidden>
+    <div class="modal shortcut-login-modal" role="dialog" aria-modal="true" aria-labelledby="shortcutLoginTitle" aria-describedby="shortcutLoginCopy">
+      <button class="modal-close" id="shortcutLoginCloseBtn" type="button" aria-label="Close login dialog">×</button>
+      <h2 id="shortcutLoginTitle">Sign in with Discord <svg class="shortcut-discord-mark" width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect x="64" y="64" width="896" height="896" rx="224" fill="#5865f2"/><path d="M689.43 349a422.2 422.2 0 0 0-104.22-32.32 1.58 1.58 0 0 0-1.68.79 294 294 0 0 0-13 26.66 389.8 389.8 0 0 0-117.05 0 270 270 0 0 0-13.18-26.66 1.64 1.64 0 0 0-1.68-.79A421 421 0 0 0 334.44 349a1.5 1.5 0 0 0-.69.59c-66.37 99.17-84.55 195.9-75.63 291.41a1.76 1.76 0 0 0 .67 1.2 424.6 424.6 0 0 0 127.85 64.63 1.66 1.66 0 0 0 1.8-.59 303.5 303.5 0 0 0 26.15-42.54 1.62 1.62 0 0 0-.89-2.25 279.6 279.6 0 0 1-39.94-19 1.64 1.64 0 0 1-.16-2.72c2.68-2 5.37-4.1 7.93-6.22a1.58 1.58 0 0 1 1.65-.22c83.79 38.26 174.51 38.26 257.31 0a1.58 1.58 0 0 1 1.68.2c2.56 2.11 5.25 4.23 8 6.24a1.64 1.64 0 0 1-.14 2.72 262.4 262.4 0 0 1-40 19 1.63 1.63 0 0 0-.87 2.28 341 341 0 0 0 26.13 42.52 1.62 1.62 0 0 0 1.8.61 423.2 423.2 0 0 0 128-64.63 1.64 1.64 0 0 0 .67-1.18c10.68-110.44-17.88-206.38-75.7-291.42a1.3 1.3 0 0 0-.63-.63M427.09 582.85c-25.23 0-46-23.16-46-51.6s20.38-51.6 46-51.6c25.83 0 46.42 23.36 46 51.6.02 28.44-20.37 51.6-46 51.6m170.13 0c-25.23 0-46-23.16-46-51.6s20.38-51.6 46-51.6c25.83 0 46.42 23.36 46 51.6.01 28.44-20.17 51.6-46 51.6" fill="#fff"/></svg></h2>
+      <p class="auth-copy" id="shortcutLoginCopy">Sign in to use the BBTSL tools assigned to your Discord role. Browsing values stays public.</p>
+      <div class="modal-actions shortcut-login-actions">
+        <button class="btn-cancel" id="shortcutLoginCancelBtn" type="button">Cancel</button>
+        <button class="btn-save" id="shortcutLoginBtn" type="button">Login with Discord</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="favoriteLoginOverlay" hidden>
+    <div class="modal shortcut-login-modal" role="dialog" aria-modal="true" aria-labelledby="favoriteLoginTitle" aria-describedby="favoriteLoginCopy">
+      <button class="modal-close" id="favoriteLoginCloseBtn" type="button" aria-label="Close favorite login dialog">×</button>
+      <h2 id="favoriteLoginTitle">Sign in with Discord <svg class="shortcut-discord-mark" width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect x="64" y="64" width="896" height="896" rx="224" fill="#5865f2"/><path d="M689.43 349a422.2 422.2 0 0 0-104.22-32.32 1.58 1.58 0 0 0-1.68.79 294 294 0 0 0-13 26.66 389.8 389.8 0 0 0-117.05 0 270 270 0 0 0-13.18-26.66 1.64 1.64 0 0 0-1.68-.79A421 421 0 0 0 334.44 349a1.5 1.5 0 0 0-.69.59c-66.37 99.17-84.55 195.9-75.63 291.41a1.76 1.76 0 0 0 .67 1.2 424.6 424.6 0 0 0 127.85 64.63 1.66 1.66 0 0 0 1.8-.59 303.5 303.5 0 0 0 26.15-42.54 1.62 1.62 0 0 0-.89-2.25 279.6 279.6 0 0 1-39.94-19 1.64 1.64 0 0 1-.16-2.72c2.68-2 5.37-4.1 7.93-6.22a1.58 1.58 0 0 1 1.65-.22c83.79 38.26 174.51 38.26 257.31 0a1.58 1.58 0 0 1 1.68.2c2.56 2.11 5.25 4.23 8 6.24a1.64 1.64 0 0 1-.14 2.72 262.4 262.4 0 0 1-40 19 1.63 1.63 0 0 0-.87 2.28 341 341 0 0 0 26.13 42.52 1.62 1.62 0 0 0 1.8.61 423.2 423.2 0 0 0 128-64.63 1.64 1.64 0 0 0 .67-1.18c10.68-110.44-17.88-206.38-75.7-291.42a1.3 1.3 0 0 0-.63-.63M427.09 582.85c-25.23 0-46-23.16-46-51.6s20.38-51.6 46-51.6c25.83 0 46.42 23.36 46 51.6.02 28.44-20.37 51.6-46 51.6m170.13 0c-25.23 0-46-23.16-46-51.6s20.38-51.6 46-51.6c25.83 0 46.42 23.36 46 51.6.01 28.44-20.17 51.6-46 51.6" fill="#fff"/></svg></h2>
+      <p class="auth-copy" id="favoriteLoginCopy">To favorite any items, you must be logged in.</p>
+      <div class="modal-actions shortcut-login-actions">
+        <button class="btn-cancel" id="favoriteLoginCancelBtn" type="button">Cancel</button>
+        <button class="btn-save" id="favoriteLoginBtn" type="button">Login with Discord</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="accountChoiceOverlay" hidden>
+    <div class="modal account-choice-modal" role="dialog" aria-modal="true" aria-labelledby="accountChoiceTitle" aria-describedby="accountChoiceCopy">
+      <button class="modal-close" id="accountChoiceCloseBtn" type="button" aria-label="Close account choice dialog">×</button>
+      <h2 id="accountChoiceTitle">Choose how to sign in</h2>
+      <p class="auth-copy" id="accountChoiceCopy">Use your normal Discord account or switch into the internal BBTSL system profile for site work.</p>
+      <div class="account-choice-options">
+        <button class="account-choice-option" id="accountChoiceActualBtn" type="button">
+          <div class="account-choice-avatar identity-avatar identity-avatar-fallback" id="accountChoiceActualAvatar">?</div>
+          <div class="account-choice-copy">
+            <strong id="accountChoiceActualName">Your account</strong>
+            <span id="accountChoiceActualRole">Discord account</span>
+          </div>
+        </button>
+        <button class="account-choice-option account-choice-option-system" id="accountChoiceSystemBtn" type="button">
+          <img class="account-choice-avatar" src="/og-image.png" alt="BBTSL">
+          <div class="account-choice-copy">
+            <strong>BBTSL</strong>
+            <span>System</span>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <p class="footer-copy">Values are community-tracked and may shift as availability and demand change. BBTSL is an unofficial project and is not affiliated with Roblox, Blade Ball, their owners, or their respective copyright holders.</p>
+    <p class="footer-line"><span class="footer-label">Credits</span><span class="footer-items">PVEstrap - <a href="https://github.com/PVEstrap" target="_blank" rel="noreferrer">GitHub</a> / <a href="https://pvestrap.com" target="_blank" rel="noreferrer">Website</a> <span class="footer-sep">|</span> Kronos - <a href="https://pve.bio/kronos" target="_blank" rel="noreferrer">Website</a> <span class="footer-sep">|</span> Basic - <a href="https://github.com/06basic" target="_blank" rel="noreferrer">GitHub</a></span></p>
+    <p class="footer-line"><span class="footer-label">Links</span><span class="footer-items"><a href="https://www.roblox.com/games/13772394625/Blade-Ball" target="_blank" rel="noreferrer">Blade Ball Experience</a> <span class="footer-sep">|</span> <a href="/team">Team</a> <span class="footer-sep">|</span> <a href="/privacy">Privacy</a> <span class="footer-sep">|</span> <a href="/terms">Terms</a> <span class="footer-sep">|</span> Contact BBTSL through the credited people above or at <a href="mailto:bbtsl@pve.bio">bbtsl@pve.bio</a>.</span></p>
+    <p class="footer-line"><span class="footer-label">Notice</span><span class="footer-items">This site is provided <strong class="footer-emphasis">as-is</strong> for informational use. Value entries, counts, and demand notes may change without notice and <strong class="footer-emphasis">should not</strong> be treated as guaranteed, official, or final.</span></p>
+  </footer>
+
+  <div class="modal-overlay" id="editorSystemOverlay" hidden>
+    <div class="modal editor-system-modal" role="dialog" aria-modal="true" aria-labelledby="editorSystemTitle" aria-describedby="editorSystemCopy">
+      <button class="modal-close" id="editorSystemCloseBtn" type="button" aria-label="Close editor selection">×</button>
+      <p class="editor-system-kicker">Edit Card</p>
+      <h2 id="editorSystemTitle">Choose an editing system</h2>
+      <p class="editor-system-copy" id="editorSystemCopy">Both use the same save flow and permissions. Choose the layout that works best for you.</p>
+      <div class="editor-system-options">
+        <button class="editor-system-option" id="editorSystemV1Btn" type="button">
+          <strong>Editing System V1</strong>
+          <span>Current editor layout</span>
+        </button>
+        <button class="editor-system-option editor-system-option-v2" id="editorSystemV2Btn" type="button">
+          <strong>Editing System V2</strong>
+          <span>Redesigned editing workspace</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="detailModalOverlay" hidden>
+    <div class="modal modal-split" role="dialog" aria-modal="true" aria-labelledby="detailModalTitle">
+      <button class="modal-close" id="detailCloseBtn" type="button" aria-label="Close modal">×</button>
+      <button class="detail-share-btn detail-share-btn-top" id="detailShareBtn" type="button">Share</button>
+      <div class="modal-split-layout">
+        <section class="modal-panel modal-panel-edit" id="editPanel" hidden>
+          <h2 id="detailModalTitle">Edit Sword</h2>
+          <p class="panel-copy">Authorized users can update only the currently selected sword here.</p>
+          <form id="editForm">
+            <div class="field">
+              <label for="f-name">Name</label>
+              <input type="text" id="f-name" required>
+            </div>
+            <div class="field">
+              <label for="f-cat">Category</label>
+              <select id="f-cat">
+                <option value="LTM">LTM</option>
+                <option value="Ranked">Ranked</option>
+                <option value="Top Spenders">Top Spenders</option>
+                <option value="Other Swords">Other Swords</option>
+                <option value="Explosions">Explosions</option>
+                <option value="Emotes">Emotes</option>
+              </select>
+            </div>
+            <div class="field-grid">
+              <div class="field">
+                <label for="f-value">Value</label>
+                <input type="text" id="f-value" inputmode="numeric" autocomplete="off" spellcheck="false">
+              </div>
+              <div class="field">
+                <label for="f-count">Count</label>
+                <input type="number" id="f-count" min="0" step="1">
+              </div>
+            </div>
+            <div class="field-grid">
+              <div class="field">
+                <label for="f-demand">Demand</label>
+                <select id="f-demand">
+                  <option value="Very High">Very High</option>
+                  <option value="High">High</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Low">Low</option>
+                  <option value="N/A">N/A</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="f-trend">Trend</label>
+                <select id="f-trend">
+                  <option value="Rising">Rising</option>
+                  <option value="Falling">Falling</option>
+                  <option value="Stable">Stable</option>
+                  <option value="Manipulated">Manipulated</option>
+                  <option value="N/A">N/A</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label for="f-image">Card Media</label>
+              <div id="f-image-preview" class="image-preview">No media</div>
+              <input type="file" id="f-image" accept="image/png,image/jpeg,image/webp,image/gif,video/mp4">
+              <button id="f-image-remove" class="text-link" type="button" hidden>Remove card media</button>
+            </div>
+            <div class="field">
+              <label for="f-detail-media" id="f-detail-label">VFX Preview</label>
+              <div id="f-detail-preview" class="image-preview">No VFX preview</div>
+              <input type="file" id="f-detail-media" accept="image/png,image/jpeg,image/webp,image/gif,video/mp4">
+              <button id="f-detail-remove" class="text-link" type="button" hidden>Remove VFX preview</button>
+            </div>
+            <div class="field" id="f-slash-field">
+              <label for="f-slash-media">Slash Preview</label>
+              <div id="f-slash-preview" class="image-preview">No slash preview</div>
+              <input type="file" id="f-slash-media" accept="image/png,image/jpeg,image/webp,image/gif,video/mp4">
+              <button id="f-slash-remove" class="text-link" type="button" hidden>Remove slash preview</button>
+            </div>
+            <div class="field">
+              <label for="f-slash-audio" id="f-audio-label">SFX Preview</label>
+              <div id="f-audio-preview" class="image-preview">No SFX preview</div>
+              <input type="file" id="f-slash-audio" accept="audio/mpeg,audio/x-mpeg,audio/mp3,audio/ogg,audio/wav,.mpeg,.mp3,.ogg,.wav">
+              <button id="f-audio-remove" class="text-link" type="button" hidden>Remove SFX preview</button>
+            </div>
+            <div class="field" id="f-finisher-field" hidden>
+              <label for="f-finisher-media">Finisher Preview</label>
+              <div id="f-finisher-preview" class="image-preview">No finisher preview</div>
+              <input type="file" id="f-finisher-media" accept="image/png,image/jpeg,image/webp,image/gif,video/mp4">
+              <button id="f-finisher-remove" class="text-link" type="button" hidden>Remove finisher preview</button>
+            </div>
+            <div class="field">
+              <label for="f-desc">Description</label>
+              <textarea id="f-desc"></textarea>
+            </div>
+            <label class="field-toggle" for="f-finisher-enabled">
+              <input id="f-finisher-enabled" type="checkbox">
+              <span>Enable Finisher Preview</span>
+            </label>
+            <p class="form-error" id="editFormError" role="alert" hidden></p>
+            <div class="modal-actions">
+              <button type="button" class="btn-delete" id="deleteBtn" hidden>Delete</button>
+              <button type="button" class="btn-cancel" id="cancelBtn">Cancel</button>
+              <button type="submit" class="btn-save" id="editSaveBtn">Save Changes</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="modal-panel modal-panel-detail">
+          <div class="detail-layout">
+            <section class="detail-info-column">
+              <div class="detail-title-row">
+                <h2 class="detail-title" id="detailTitle">Sword Detail</h2>
+                <span class="cat-badge detail-category-badge" id="detailCategory">Category</span>
+              </div>
+              <div class="detail-thumb-wrap" id="detailThumbWrap"></div>
+              <div class="detail-stat-grid detail-stat-grid-compact">
+                <div class="detail-stat"><span class="detail-stat-label">Demand</span><strong id="detailDemand">N/A</strong></div>
+                <div class="detail-stat"><span class="detail-stat-label">Trend</span><strong id="detailTrend">N/A</strong></div>
+                <div class="detail-stat"><span class="detail-stat-label">Count</span><strong id="detailCount">-</strong></div>
+              </div>
+              <div class="detail-value-row">
+                <div class="detail-value-block card-value" id="detailValue"><img class="value-token" src="/token.svg" alt="" aria-hidden="true">0</div>
+                <button class="detail-favorite-btn" id="detailFavoriteBtn" type="button" aria-pressed="false" aria-label="Add item to favorites">
+                  <span class="detail-favorite-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" focusable="false">
+                      <path class="favorite-star-fill" d="M12 3.9 14.55 9l5.65.82-4.09 3.99.96 5.63L12 16.78 6.93 19.44l.97-5.63-4.1-3.99L9.45 9 12 3.9Z"/>
+                      <path class="favorite-star-stroke" d="M12 3.9 14.55 9l5.65.82-4.09 3.99.96 5.63L12 16.78 6.93 19.44l.97-5.63-4.1-3.99L9.45 9 12 3.9Z"/>
+                    </svg>
+                  </span>
+                  <span class="detail-favorite-copy">Favorite</span>
+                </button>
+              </div>
+              <div class="detail-description-block">
+                <p class="detail-description" id="detailDescription">No description is available for this item yet.</p>
+              </div>
+              <div class="detail-meta-line">
+                <span id="detailUpdated">Updated</span>
+                <span class="detail-card-id" id="detailCardId">#------</span>
+              </div>
+            </section>
+            <section class="detail-preview-column">
+              <div class="detail-media-grid detail-media-grid-large" id="detailMediaGrid">
+                <div class="detail-media-card detail-media-card-primary" id="detailPrimaryCard">
+                  <div class="detail-media-head">
+                    <div class="detail-media-label" id="detailPrimaryLabel">VFX Preview</div>
+                    <div class="detail-media-actions">
+                      <a class="detail-media-download" id="detailPrimaryDownload" href="#" download aria-label="Download VFX preview" hidden>
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                          <path fill="currentColor" d="M12 3.75a.9.9 0 0 1 .9.9v7.877l2.764-2.764a.9.9 0 1 1 1.272 1.273l-4.3 4.3a.9.9 0 0 1-1.272 0l-4.3-4.3a.9.9 0 1 1 1.272-1.273L11.1 12.527V4.65a.9.9 0 0 1 .9-.9Zm-6.15 12.6a.9.9 0 0 1 .9.9v1.2h10.5v-1.2a.9.9 0 0 1 1.8 0v2.1a.9.9 0 0 1-.9.9H5.85a.9.9 0 0 1-.9-.9v-2.1a.9.9 0 0 1 .9-.9Z"/>
+                        </svg>
+                      </a>
+                    </div>
+                  </div>
+                  <div class="detail-media-shell-wrap">
+                    <div id="detailPrimaryMedia" class="detail-media-shell"></div>
+                    <button class="detail-media-audio-toggle" id="detailPrimaryAudioBtn" type="button" hidden>🔇</button>
+                  </div>
+                </div>
+                <div class="detail-media-card detail-media-card-slash" id="detailSlashCard">
+                  <div class="detail-media-head">
+                    <div class="detail-media-label">Slash Preview</div>
+                    <a class="detail-media-download" id="detailSlashDownload" href="#" download aria-label="Download slash preview" hidden>
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill="currentColor" d="M12 3.75a.9.9 0 0 1 .9.9v7.877l2.764-2.764a.9.9 0 1 1 1.272 1.273l-4.3 4.3a.9.9 0 0 1-1.272 0l-4.3-4.3a.9.9 0 1 1 1.272-1.273L11.1 12.527V4.65a.9.9 0 0 1 .9-.9Zm-6.15 12.6a.9.9 0 0 1 .9.9v1.2h10.5v-1.2a.9.9 0 0 1 1.8 0v2.1a.9.9 0 0 1-.9.9H5.85a.9.9 0 0 1-.9-.9v-2.1a.9.9 0 0 1 .9-.9Z"/>
+                      </svg>
+                    </a>
+                  </div>
+                  <div id="detailSlashMedia" class="detail-media-shell"></div>
+                </div>
+                <div class="detail-media-card detail-media-card-audio detail-media-card-audio-slim">
+                  <div class="detail-media-head">
+                    <div class="detail-media-label" id="detailAudioLabel">SFX Preview</div>
+                    <div class="detail-media-actions">
+                      <a class="detail-media-download" id="detailAudioDownload" href="#" download aria-label="Download SFX preview" hidden>
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                          <path fill="currentColor" d="M12 3.75a.9.9 0 0 1 .9.9v7.877l2.764-2.764a.9.9 0 1 1 1.272 1.273l-4.3 4.3a.9.9 0 0 1-1.272 0l-4.3-4.3a.9.9 0 1 1 1.272-1.273L11.1 12.527V4.65a.9.9 0 0 1 .9-.9Zm-6.15 12.6a.9.9 0 0 1 .9.9v1.2h10.5v-1.2a.9.9 0 0 1 1.8 0v2.1a.9.9 0 0 1-.9.9H5.85a.9.9 0 0 1-.9-.9v-2.1a.9.9 0 0 1 .9-.9Z"/>
+                        </svg>
+                      </a>
+                    </div>
+                  </div>
+                  <div id="detailSlashAudio" class="detail-media-shell"></div>
+                </div>
+                <div class="detail-media-card detail-media-card-finisher" id="detailFinisherCard" hidden>
+                  <div class="detail-media-head">
+                    <div class="detail-media-label">Finisher Preview</div>
+                    <a class="detail-media-download" id="detailFinisherDownload" href="#" download aria-label="Download finisher preview" hidden>
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill="currentColor" d="M12 3.75a.9.9 0 0 1 .9.9v7.877l2.764-2.764a.9.9 0 1 1 1.272 1.273l-4.3 4.3a.9.9 0 0 1-1.272 0l-4.3-4.3a.9.9 0 1 1 1.272-1.273L11.1 12.527V4.65a.9.9 0 0 1 .9-.9Zm-6.15 12.6a.9.9 0 0 1 .9.9v1.2h10.5v-1.2a.9.9 0 0 1 1.8 0v2.1a.9.9 0 0 1-.9.9H5.85a.9.9 0 0 1-.9-.9v-2.1a.9.9 0 0 1 .9-.9Z"/>
+                      </svg>
+                    </a>
+                  </div>
+                  <div class="detail-media-shell-wrap">
+                    <div id="detailFinisherMedia" class="detail-media-shell"></div>
+                    <button class="detail-media-audio-toggle" id="detailFinisherAudioBtn" type="button" hidden>🔇</button>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </section>
+      </div>
+    </div>
+    <div class="modal-uploading-indicator" id="uploadingIndicator" role="status" aria-live="polite" hidden>
+      <span class="modal-uploading-spinner" aria-hidden="true"></span>
+      <span>Uploading</span>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="auditModalOverlay" hidden>
+    <div class="modal modal-wide" role="dialog" aria-modal="true" aria-labelledby="auditModalTitle">
+      <button class="modal-close" id="auditCloseBtn" type="button" aria-label="Close audit modal">×</button>
+      <h2 id="auditModalTitle">Audit Log Explorer</h2>
+      <div class="audit-controls control-surface">
+        <div class="audit-control-field audit-control-field-search">
+          <label class="sr-only" for="auditSearch">Search audit logs</label>
+          <input id="auditSearch" type="text" placeholder="Search summary, card ID, or field">
+        </div>
+        <div class="audit-control-field">
+          <label class="sr-only" for="auditActionType">Filter audit action</label>
+          <select id="auditActionType">
+            <option value="">All actions</option>
+            <option value="sword.create">Created swords</option>
+            <option value="sword.update">Updated swords</option>
+            <option value="sword.delete">Deleted swords</option>
+            <option value="data.reset">Resets</option>
+            <option value="audit.revert">Reverts</option>
+          </select>
+        </div>
+        <div class="audit-control-field">
+          <label class="sr-only" for="auditCardId">Filter by card ID</label>
+          <input id="auditCardId" type="text" placeholder="#AAA111">
+        </div>
+        <div class="audit-control-field" id="auditActorUserWrap" hidden>
+          <label class="sr-only" for="auditActorUser">Filter by user</label>
+          <select id="auditActorUser">
+            <option value="">All users</option>
+          </select>
+        </div>
+        <button class="tbtn" id="auditRefreshBtn" type="button">Refresh</button>
+      </div>
+      <div class="audit-list" id="auditList"></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="confirmModalOverlay" hidden>
+    <div class="modal confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+      <button class="modal-close" id="confirmCloseBtn" type="button" aria-label="Close confirmation modal">×</button>
+      <h2 id="confirmModalTitle">Protected Action</h2>
+      <p class="confirm-copy" id="confirmModalCopy">Complete Discord re-authentication and type the exact confirmation phrase.</p>
+      <div class="confirm-actions">
+        <button class="tbtn" id="confirmReauthBtn" type="button">Re-auth with Discord</button>
+      </div>
+      <div class="field">
+        <label for="confirmPhraseInput">Confirmation phrase</label>
+        <input id="confirmPhraseInput" type="text" autocomplete="off">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" id="confirmCancelBtn">Cancel</button>
+        <button type="button" class="btn-save" id="confirmSubmitBtn" disabled>Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/app.min.js"></script>
+</body>
+</html>

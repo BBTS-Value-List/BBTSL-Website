@@ -1,0 +1,31 @@
+name: Data correction
+description: Report a sword value, description, image, or metadata correction
+title: "[Data]: "
+labels:
+  - data
+body:
+  - type: input
+    id: item_name
+    attributes:
+      label: Item name
+    validations:
+      required: true
+  - type: textarea
+    id: incorrect
+    attributes:
+      label: What is incorrect
+    validations:
+      required: true
+  - type: textarea
+    id: correction
+    attributes:
+      label: Proposed correction
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence or source
+      description: Provide public source links, screenshots, or a clear explanation. Do not include private account details.
+    validations:
+      required: true

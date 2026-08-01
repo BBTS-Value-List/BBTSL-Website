@@ -1,0 +1,21 @@
+{
+  "name": "bladeball-value-list",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cloudflare Worker site for the BBTSL Blade Ball Top Spender List.",
+  "license": "SEE LICENSE IN LICENSE",
+  "type": "module",
+  "engines": { "node": ">=22.0.0" },
+  "scripts": {
+    "build:public-assets": "node scripts/build-public-assets.mjs",
+    "cf:migrate:local": "wrangler d1 migrations apply bladeball-value-list --local",
+    "cf:migrate": "wrangler d1 migrations apply bladeball-value-list --remote",
+    "cf:dev": "npm run build:public-assets && npm run cf:migrate:local && wrangler dev",
+    "cf:deploy": "npm run build:public-assets && npm run cf:migrate && wrangler deploy",
+    "secrets:generate": "node scripts/generate-secret-token.mjs",
+    "api:v1-key": "node scripts/v1-api-key.mjs",
+    "check": "node --check src/worker-entry.js && node --check src/worker.js && node --check src/favorites/user-favorites.js && node --check src/bot-api/crypto.js && node --check src/bot-api/audit-database.js && node --check src/bot-api/auth.js && node --check src/bot-api/permissions.js && node --check src/bot-api/session-bridge.js && node --check src/bot-api/reauth.js && node --check src/bot-api/audit-source.js && node --check src/bot-api/router.js && node --check src/runtime/request-context.js && node --check src/security/html.js && node --check src/security/state-coordinator.js && node --check src/security/rate-limit.js && node --check src/security/runtime-schema-boundary.js && node --check src/security/media-upload-boundary.js && node --check src/security/media-quarantine.js && node --check src/security/media-transition-recovery.js && node --check src/security/direct-media-normalization.js && node --check src/security/security-maintenance.js && node --check src/security/mutation-admission.js && node --check src/security/auth-rate-limit-boundary.js && node --check src/security/r2-usage-boundary.js && node --check src/security/session-store.js && node --check src/security/session-boundary.js && node --check src/security/public-media-registry.js && node --check src/security/audit-retention.js && node --check src/security/audit-revert-finalization.js && node --check src/security/audit-ui-boundary.js && node --check src/security/crawler-policy.js && node --check src/security/probe-path-policy.js && node --check src/security/public-config.js && node --check src/security/analytics-consent.js && node --check src/media/public-delivery.js && node --check src/media/staged-media-store.js && node --check src/media/staged-upload.js && node --check public/app.js && node --check public/team.js && node --check public/consent.js"
+  },
+  "overrides": { "sharp": "0.35.3" },
+  "devDependencies": { "terser": "^5.44.0", "wrangler": "^4.113.0" }
+}

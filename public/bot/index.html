@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="darkreader-lock">
+  <title>BBTSL Bot</title>
+  <meta name="description" content="Command reference and troubleshooting notes for the BBTSL Discord bot.">
+  <meta name="theme-color" content="#12151a">
+  <meta name="color-scheme" content="dark">
+  <meta name="robots" content="index,follow">
+  <meta property="og:title" content="BBTSL Bot">
+  <meta property="og:description" content="Command reference, status checks, staff notes, issue reports, and item handoff examples.">
+  <meta property="og:type" content="website">
+  <link rel="icon" type="image/png" href="/og-image.png">
+  <link rel="apple-touch-icon" href="/og-image.png">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/bot-support.css">
+</head>
+<body class="bot-page">
+  <a class="skip-link" href="#botMain">Skip to bot notes</a>
+  <div class="topbar">
+    <a class="brand" href="/" aria-label="Go to BBTSL home">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 20L15 9M15 9L13 3L21 5L19 11L15 9Z" stroke="#ff8a3d" stroke-width="1.6" stroke-linejoin="round"/><circle cx="4" cy="20" r="1.4" fill="#ff8a3d"/></svg>
+      <div class="brand-text">
+        <div class="name">BBTSL.LOL</div>
+        <div class="sub">Discord Bot</div>
+      </div>
+    </a>
+    <div class="topbar-actions">
+      <a class="top-link" href="/">List</a>
+      <a class="top-link" href="/team">Team</a>
+    </div>
+  </div>
+
+  <main id="botMain" class="bot-main">
+    <header class="bot-header">
+      <p class="bot-label">Discord bot</p>
+      <h1>BBTSL bot notes</h1>
+      <p>The bot uses the live item list. Favorites are stored by Discord user ID and card ID, so website and bot changes land in the same place.</p>
+    </header>
+
+    <nav class="bot-jump" aria-label="Bot page sections">
+      <a href="#commands">Commands</a>
+      <a href="#status">Status</a>
+      <a href="#staff">Staff</a>
+      <a href="#report">Report</a>
+      <a href="#handoff">Item IDs</a>
+    </nav>
+
+    <section id="commands" class="bot-block" aria-labelledby="commandsTitle">
+      <h2 id="commandsTitle">Commands</h2>
+      <p>Slash replies are public unless they show private user data. The <code>bbtsl-</code> text commands are there when slash commands are slow, missing, or not available in that channel.</p>
+      <table class="bot-table">
+        <thead>
+          <tr><th>Slash</th><th>Text</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>/item item:#ADFJCF</code></td><td><code>bbtsl-item #ADFJCF</code></td><td>Opens one card.</td></tr>
+          <tr><td><code>/search query:frog</code></td><td><code>bbtsl-search frog</code></td><td>Searches names, IDs, categories, demand, and trend.</td></tr>
+          <tr><td><code>/top metric:value</code></td><td><code>bbtsl-top value</code></td><td>Ranks by value, demand, count, or trend.</td></tr>
+          <tr><td><code>/updated</code></td><td><code>bbtsl-updated</code></td><td>Shows recent item changes.</td></tr>
+          <tr><td><code>/compare first:#AAA111 second:#BBB222</code></td><td><code>bbtsl-compare #AAA111 #BBB222</code></td><td>Compares two cards.</td></tr>
+          <tr><td><code>/team</code></td><td><code>bbtsl-team</code></td><td>Shows the public team list.</td></tr>
+          <tr><td><code>/status</code></td><td><code>bbtsl-status</code></td><td>Checks whether the bot can reach BBTSL.</td></tr>
+          <tr><td><code>/favorite list</code></td><td><code>bbtsl-favorite list</code></td><td>Private reply. Shows your saved cards.</td></tr>
+          <tr><td><code>/favorite add item:#ADFJCF</code></td><td><code>bbtsl-favorite add #ADFJCF</code></td><td>Private reply. Saves a card.</td></tr>
+          <tr><td><code>/favorite remove item:#ADFJCF</code></td><td><code>bbtsl-favorite remove #ADFJCF</code></td><td>Private reply. Removes a card.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="status" class="bot-block" aria-labelledby="statusTitle">
+      <h2 id="statusTitle">Status</h2>
+      <p id="apiStatusText">Checking the item API...</p>
+      <ul class="bot-plain-list">
+        <li><strong>Website API:</strong> <span id="apiStatusResult">checking</span></li>
+        <li><strong>Bot process:</strong> check Railway logs.</li>
+        <li><strong>Slash commands:</strong> restart Railway after command-definition changes. Global commands may take time to refresh.</li>
+      </ul>
+    </section>
+
+    <section id="staff" class="bot-block" aria-labelledby="staffTitle">
+      <h2 id="staffTitle">Staff</h2>
+      <p>Staff commands use the role on the team page. Run <code>/help</code> from the account that has access.</p>
+      <ul class="bot-plain-list">
+        <li>Use card IDs when editing. Names can collide or change.</li>
+        <li>Use audit commands for records and revert IDs, not as a replacement for item search.</li>
+        <li>Keep exports out of public channels unless the owner approved the share.</li>
+        <li>Do not use team-user commands to test public command behavior.</li>
+      </ul>
+    </section>
+
+    <section id="report" class="bot-block" aria-labelledby="reportTitle">
+      <h2 id="reportTitle">Report a bot issue</h2>
+      <p>Send enough detail to reproduce it. Do not paste tokens, cookies, private keys, or full environment dumps.</p>
+      <button class="bot-copy-btn" id="copyReportTemplate" type="button">Copy template</button>
+      <pre id="reportTemplate">Command used:
+Where used: server / DM / group DM
+Item name or ID:
+What happened:
+What should have happened:
+Time, with timezone:
+Screenshot or log snippet:
+Did the matching bbtsl-text command work:</pre>
+    </section>
+
+    <section id="handoff" class="bot-block" aria-labelledby="handoffTitle">
+      <h2 id="handoffTitle">Item IDs</h2>
+      <p>Every card has a six-character ID. Use the ID when you want Discord to open the same item the website shows.</p>
+      <ul class="bot-command-list">
+        <li><code>/item item:#ADFJCF</code></li>
+        <li><code>/search query:frost</code></li>
+        <li><code>/favorite add item:#ADFJCF</code></li>
+        <li><code>bbtsl-item #ADFJCF</code></li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer team-footer">
+    <p class="footer-copy">Values are community-tracked and may shift as availability and demand change. BBTSL is an unofficial project and is not affiliated with Roblox, Blade Ball, their owners, or their respective copyright holders.</p>
+    <p class="footer-line"><span class="footer-label">Links</span><span class="footer-items"><a href="/">List</a> <span class="footer-sep">|</span> <a href="/team">Team</a> <span class="footer-sep">|</span> <a href="/privacy">Privacy</a> <span class="footer-sep">|</span> <a href="/terms">Terms</a> <span class="footer-sep">|</span> <a href="mailto:bbtsl@pve.bio">bbtsl@pve.bio</a></span></p>
+  </footer>
+
+  <script type="module" src="/bot-support.js"></script>
+</body>
+</html>

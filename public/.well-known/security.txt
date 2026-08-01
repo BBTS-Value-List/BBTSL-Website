@@ -1,0 +1,6 @@
+Contact: mailto:bbtsl@pve.bio
+Contact: https://bbtsl.lol/team
+Expires: 2027-07-25T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://bbtsl.lol/.well-known/security.txt
+Policy: https://github.com/BBTS-Value-List/BBTSL-Website/blob/main/SECURITY.md

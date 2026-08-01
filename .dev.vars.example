@@ -1,0 +1,13 @@
+# Copy to .dev.vars for local Wrangler development. Never commit real values.
+ADMIN_SESSION_SECRET=
+DISCORD_CLIENT_ID=
+DISCORD_CLIENT_SECRET=
+DISCORD_REDIRECT_URI=https://example.invalid/api/auth/callback
+V1_API_CLIENT_SECRETS={}
+MEDIA_MIGRATION_SECRET=
+BOT_REAUTH_SECRET=
+BBTSL_BOT_CLIENT_ID=
+BOT_REAUTH_REDIRECT_URI=https://example.invalid/api/bot/v1/reauth/callback
+GA_MEASUREMENT_ID=G-XXXXXXXXXX
+
+# Keep the live machine-readable security contact in sync with public/.well-known/security.txt when it changes.

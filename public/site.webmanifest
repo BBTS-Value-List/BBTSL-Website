@@ -1,0 +1,17 @@
+{
+  "name": "BBTSL Blade Ball Top Spender List",
+  "short_name": "BBTSL",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#12151a",
+  "theme_color": "#12151a",
+  "description": "Track and search Blade Ball Top Spender Items in one place.",
+  "icons": [
+    {
+      "src": "/og-image.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

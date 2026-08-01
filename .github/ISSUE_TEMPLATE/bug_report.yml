@@ -1,0 +1,48 @@
+name: Bug report
+description: Report a site or worker bug
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Affected area
+      description: Public site, admin flow, images, worker API, auth, or something else
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: Affected URL or route
+      placeholder: https://bbtsl.lol/, /team, or /api/v1/health
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Browser or environment
+      placeholder: Chrome 126 on Windows 11, or local Wrangler preview
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: "Do not use this form for vulnerabilities or include credentials, session cookies, or private account details. See SECURITY.md for private reporting."
