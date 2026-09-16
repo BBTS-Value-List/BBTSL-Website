@@ -1,0 +1,17 @@
+node_modules/
+.wrangler/
+dist/
+artifacts/
+tmp/
+coverage/
+*.log
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+.env
+.env.local
+.env.*.local
+.dev.vars
+.dev.vars.*
+!.env.example
+tmp-api.json

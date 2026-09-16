@@ -1,0 +1,19 @@
+{
+  "name": "bladeball-value-list",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "cf:dev": "wrangler dev",
+    "cf:deploy": "wrangler deploy",
+    "d1:seed": "node scripts/seed-d1.mjs",
+    "auth:hash-password": "node scripts/hash-password.mjs",
+    "auth:totp-secret": "node scripts/generate-totp-secret.mjs",
+    "auth:session-secret": "node scripts/generate-secret-token.mjs",
+    "images:d1-import": "node scripts/import-images-to-d1.mjs",
+    "images:d1-import-r2-state": "node scripts/import-r2-state-to-d1.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4.26.0"
+  }
+}
